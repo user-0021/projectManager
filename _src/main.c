@@ -268,14 +268,6 @@ void CreateProjectDir(const char* const basepath,uint32_t programLangIndex)
   }
 }
 
-const char const C_MAKEFILE[] = "#コンパイラの指定\nCC     = gcc\n\n#コンパイルオプション\nCFLAGS =\n\n"
-"#実行ファイル名\nTARGET = pmn\n\n#コンパイルするファイル\nSRCDIRS  = ./_src\n\nSRCS    = $(SRCDIRS:%%=%%/*.c)\n\n"
-"#オブジェクトファイル\n_OBJS   = $(SRCS:%%.c=%%.o)\nOBJS   = $(notdir $(_OBJS))\n\n\n#ヘッダファイルの場所\n\n"
-"INCDIR = -I _include\n\n#ライブラリのディレクトリ\nLIBDIR  = \n\n#追加するライブラリファイル\nLIBS    =\n\n "
-"#ターゲットファイル生成\n$(TARGET): $(OBJS)\n	$(CC) -o $@ $^ $(LIBDIR) $(LIBS)\n\n#オブジェクトファイル生成\n"
-"$(OBJS): $(SRCS)\n	$(CC) $(CFLAGS) $(INCDIR) -c $(SRCS)\n\n# (11)\"make all\"で make cleanとmakeを同時に実施。\n"
-"all: clean $(OBJS) $(TARGET)\n# (12).oファイル、実行ファイル、.dファイルを削除\nclean:\n	-rm -f $(OBJS) $(TARGET) $(OBJDIR)/*.d";
-
 void CreateProjectDir_C_LANG(const char* const basepath)
 {
   char tmpPath[256];
@@ -283,18 +275,18 @@ void CreateProjectDir_C_LANG(const char* const basepath)
 
   //createSrcDirectory
   memcpy(tmpPath,basepath,strlen(basepath)+1);
-  strcat(tmpPath,"/_src");
+  strcat(tmpPath,TEXT_NAME_OF_SRC_DIR);
   status &= CreateDirProcess(tmpPath,0755);
 
   //createIncludeDirectory
   tmpPath[strlen(basepath)] = '\0';
-  strcat(tmpPath,"/_include");
+  strcat(tmpPath,TEXT_NAME_OF_INCLUDE_DIR);
   status &= CreateDirProcess(tmpPath,0755);
 
   //createmakefile
   tmpPath[strlen(basepath)] = '\0';
   strcat(tmpPath,"/makefile");
-  status &= CreateAndWriteFileProcess(tmpPath,C_MAKEFILE);
+  status &= CreateAndWriteFileProcess(tmpPath,TEXT_C_LANG_MAKE_FILE);
 
 
   if(status == false)

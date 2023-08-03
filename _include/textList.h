@@ -44,3 +44,11 @@ extern const char const TEXT_CREATE_DIRCTORY_NEED_SUDDO[];
 //remove project
 extern const char const TEXT_REMOVE_PROJECT_SUCCESS[];
 extern const char const TEXT_REMOVE_PROJECT_FAILED[];
+
+//dir names
+extern const char const TEXT_NAME_OF_SRC_DIR[];
+extern const char const TEXT_NAME_OF_INCLUDE_DIR[];
+
+
+//make text
+extern const char const TEXT_C_LANG_MAKE_FILE[];
