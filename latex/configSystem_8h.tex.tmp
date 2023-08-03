@@ -1,0 +1,51 @@
+\hypertarget{configSystem_8h}{}\doxysection{\+\_\+include/config\+System.h ファイル}
+\label{configSystem_8h}\index{\_include/configSystem.h@{\_include/configSystem.h}}
+
+
+For Project\+List  
+
+
+{\ttfamily \#include $<$stdint.\+h$>$}\newline
+{\ttfamily \#include $<$stdbool.\+h$>$}\newline
+config\+System.\+h の依存先関係図\+:
+% FIG 0
+\doxysubsection*{データ構造}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{struct__projectList}{\+\_\+project\+List}}
+\begin{DoxyCompactList}\small\item\em List For Project(typedef to Project\+List) \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{型定義}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{configSystem_8h_a21d86416873e900a5a746b33d6d7805b}\label{configSystem_8h_a21d86416873e900a5a746b33d6d7805b}} 
+typedef struct \mbox{\hyperlink{struct__projectList}{\+\_\+project\+List}} {\bfseries Project\+List}
+\end{DoxyCompactItemize}
+\doxysubsection*{関数}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{configSystem_8h_a247a1400d2b4b7990704a20f09a97efe}\label{configSystem_8h_a247a1400d2b4b7990704a20f09a97efe}} 
+bool {\bfseries Check\+Config\+Dir} ()
+\item 
+\mbox{\Hypertarget{configSystem_8h_ab5663fdb34fad3cebffd4ee5d242be7b}\label{configSystem_8h_ab5663fdb34fad3cebffd4ee5d242be7b}} 
+bool {\bfseries Add\+Project\+List} (const \mbox{\hyperlink{struct__projectList}{Project\+List}} p\+Data)
+\item 
+\mbox{\Hypertarget{configSystem_8h_adcdb970ff796fb1bb9be5c983851f360}\label{configSystem_8h_adcdb970ff796fb1bb9be5c983851f360}} 
+bool {\bfseries Write\+Project\+List} (const \mbox{\hyperlink{struct__projectList}{Project\+List}} $\ast$p\+List)
+\item 
+\mbox{\Hypertarget{configSystem_8h_a295d658c11288729ec31640c0e01da54}\label{configSystem_8h_a295d658c11288729ec31640c0e01da54}} 
+\mbox{\hyperlink{struct__projectList}{Project\+List}} $\ast$ {\bfseries Get\+Project\+List} ()
+\item 
+\mbox{\Hypertarget{configSystem_8h_ac2a44a6d74089dd9592d73a3ca47a282}\label{configSystem_8h_ac2a44a6d74089dd9592d73a3ca47a282}} 
+void {\bfseries Free\+Project\+List} (\mbox{\hyperlink{struct__projectList}{Project\+List}} $\ast$head)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{詳解}
+For Project\+List 
+
+\begin{DoxyAuthor}{著者}
+user-\/0021 
+\end{DoxyAuthor}
+\begin{DoxyDate}{日付}
+2023/07/13 
+\end{DoxyDate}

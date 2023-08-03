@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.9.1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ProjectManeger: _include/configSystem.h ソースファイル</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">ProjectManeger
+   &#160;<span id="projectnumber">1.0.0</span>
+   </div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 構築: Doxygen 1.9.1 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+var searchBox = new SearchBox("searchBox", "search",false,'検索','.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',true,false,'search.php','検索');
+  $(document).ready(function() { init_search(); });
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="javascript:void(0)" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_99c6305d7dba3b2a18943adeeb4a96cf.html">_include</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle">
+<div class="title">configSystem.h</div>  </div>
+</div><!--header-->
+<div class="contents">
+<a href="configSystem_8h.html">[詳解]</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160; </div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;stdint.h&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;stdbool.h&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code" href="struct__projectList.html">_projectList</a>  <a class="code" href="struct__projectList.html">ProjectList</a>;</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
+<div class="line"><a name="l00017"></a><span class="lineno"><a class="line" href="struct__projectList.html">   17</a></span>&#160;<span class="keyword">struct </span><a class="code" href="struct__projectList.html">_projectList</a></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;{</div>
+<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="struct__projectList.html#a7e9dd03af5e123d1a9fa8b240a56cf39">   20</a></span>&#160;  <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="struct__projectList.html#a7e9dd03af5e123d1a9fa8b240a56cf39">projectName</a>;</div>
+<div class="line"><a name="l00022"></a><span class="lineno"><a class="line" href="struct__projectList.html#ae4087c1f10c453e01b6ce2edb831b9fd">   22</a></span>&#160;  <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="struct__projectList.html#ae4087c1f10c453e01b6ce2edb831b9fd">projectBrief</a>;</div>
+<div class="line"><a name="l00024"></a><span class="lineno"><a class="line" href="struct__projectList.html#a3a221fc22d670a784d738d90e2ccb0b7">   24</a></span>&#160;  <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="struct__projectList.html#a3a221fc22d670a784d738d90e2ccb0b7">projectPath</a>;</div>
+<div class="line"><a name="l00026"></a><span class="lineno"><a class="line" href="struct__projectList.html#a94985c0c8e74626c19cba4ebb6c2494e">   26</a></span>&#160;  <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="struct__projectList.html#a94985c0c8e74626c19cba4ebb6c2494e">useGithub</a>;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;  </div>
+<div class="line"><a name="l00029"></a><span class="lineno"><a class="line" href="struct__projectList.html#aed5bb2427d35c2fff7e62eff852a4c1a">   29</a></span>&#160;  <a class="code" href="struct__projectList.html">ProjectList</a>* <a class="code" href="struct__projectList.html#aed5bb2427d35c2fff7e62eff852a4c1a">next</a>;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;};</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="keywordtype">bool</span> CheckConfigDir();</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="keywordtype">bool</span> AddProjectList(<span class="keyword">const</span> <a class="code" href="struct__projectList.html">ProjectList</a> pData);</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="keywordtype">bool</span> WriteProjectList(<span class="keyword">const</span> <a class="code" href="struct__projectList.html">ProjectList</a>* pList);</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<a class="code" href="struct__projectList.html">ProjectList</a>* GetProjectList();</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; </div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="keywordtype">void</span> FreeProjectList(<a class="code" href="struct__projectList.html">ProjectList</a>* head);</div>
+<div class="ttc" id="astruct__projectList_html"><div class="ttname"><a href="struct__projectList.html">_projectList</a></div><div class="ttdoc">List For Project(typedef to ProjectList)</div><div class="ttdef"><b>Definition:</b> configSystem.h:18</div></div>
+<div class="ttc" id="astruct__projectList_html_a3a221fc22d670a784d738d90e2ccb0b7"><div class="ttname"><a href="struct__projectList.html#a3a221fc22d670a784d738d90e2ccb0b7">_projectList::projectPath</a></div><div class="ttdeci">const char * projectPath</div><div class="ttdoc">projectPath</div><div class="ttdef"><b>Definition:</b> configSystem.h:24</div></div>
+<div class="ttc" id="astruct__projectList_html_a7e9dd03af5e123d1a9fa8b240a56cf39"><div class="ttname"><a href="struct__projectList.html#a7e9dd03af5e123d1a9fa8b240a56cf39">_projectList::projectName</a></div><div class="ttdeci">const char * projectName</div><div class="ttdoc">projectName</div><div class="ttdef"><b>Definition:</b> configSystem.h:20</div></div>
+<div class="ttc" id="astruct__projectList_html_a94985c0c8e74626c19cba4ebb6c2494e"><div class="ttname"><a href="struct__projectList.html#a94985c0c8e74626c19cba4ebb6c2494e">_projectList::useGithub</a></div><div class="ttdeci">const char * useGithub</div><div class="ttdoc">useGithub</div><div class="ttdef"><b>Definition:</b> configSystem.h:26</div></div>
+<div class="ttc" id="astruct__projectList_html_ae4087c1f10c453e01b6ce2edb831b9fd"><div class="ttname"><a href="struct__projectList.html#ae4087c1f10c453e01b6ce2edb831b9fd">_projectList::projectBrief</a></div><div class="ttdeci">const char * projectBrief</div><div class="ttdoc">projectBrief</div><div class="ttdef"><b>Definition:</b> configSystem.h:22</div></div>
+<div class="ttc" id="astruct__projectList_html_aed5bb2427d35c2fff7e62eff852a4c1a"><div class="ttname"><a href="struct__projectList.html#aed5bb2427d35c2fff7e62eff852a4c1a">_projectList::next</a></div><div class="ttdeci">ProjectList * next</div><div class="ttdoc">next Pointer(need zero clear)</div><div class="ttdef"><b>Definition:</b> configSystem.h:29</div></div>
+</div><!-- fragment --></div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+構築:&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+</small></address>
+</body>
+</html>
