@@ -186,8 +186,10 @@ char* scanPath()
         for(cwdSize--;cwdSize != 0;cwdSize--)
         {
           if(cwd[cwdSize] == '/')
+          {
             cwd[cwdSize] == '\0';//文字列の終端を一つ上のディレクトリのとこにする。
             break;
+          }
         }
       }
     }
