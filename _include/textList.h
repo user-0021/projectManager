@@ -18,10 +18,10 @@ extern const char const TEXT_CHOOSE_LIST_INFO_NUMBER[];
 //actionList text
 extern const char const TEXT_ACTION_NAME_CREATE_PROJECT[];
 extern const char const TEXT_ACTION_NAME_OPEN_PROJECT[];
-extern const char const TEXT_ACTION_NAME_REMOVE_CONFIG[];
+extern const char const TEXT_ACTION_NAME_REMOVE_PROJECT[];
 extern const char const TEXT_ACTION_BRIEF_CREATE_PROJECT[];
 extern const char const TEXT_ACTION_BRIEF_OPEN_PROJECT[];
-extern const char const TEXT_ACTION_BRIEF_REMOVE_CONFIG[];
+extern const char const TEXT_ACTION_BRIEF_REMOVE_PROJECT[];
 
 //removeConfig text
 extern const char const TEXT_REMOVE_CONFIG_CONFIRMATION[];
