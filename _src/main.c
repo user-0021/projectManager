@@ -67,7 +67,7 @@ int main(int argc,char* argv[])
 
   ChooseList* actionList = CreateChooseList(TEXT_ACTION_NAME_CREATE_PROJECT,TEXT_ACTION_BRIEF_CREATE_PROJECT,&CreateProject);
   JoinChooseList(CreateChooseList(TEXT_ACTION_NAME_OPEN_PROJECT  ,TEXT_ACTION_BRIEF_OPEN_PROJECT  ,&OpenProject) ,actionList);
-  JoinChooseList(CreateChooseList(TEXT_ACTION_NAME_REMOVE_CONFIG  ,TEXT_ACTION_BRIEF_REMOVE_CONFIG,&RemoveProject) ,actionList);
+  JoinChooseList(CreateChooseList(TEXT_ACTION_NAME_REMOVE_PROJECT  ,TEXT_ACTION_BRIEF_REMOVE_PROJECT,&RemoveProject) ,actionList);
 
   OutPutChooseList(actionList);
 

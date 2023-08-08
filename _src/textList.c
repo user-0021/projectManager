@@ -15,10 +15,10 @@ const char const TEXT_CHOOSE_LIST_INFO_NUMBER[]  = "You choose %u\n\n";
 //actionList text
 const char const TEXT_ACTION_NAME_CREATE_PROJECT[]  = "Create project";
 const char const TEXT_ACTION_NAME_OPEN_PROJECT[]    = "Open project";
-const char const TEXT_ACTION_NAME_REMOVE_CONFIG[]   = "Remove config";
+const char const TEXT_ACTION_NAME_REMOVE_PROJECT[]   = "Remove project";
 const char const TEXT_ACTION_BRIEF_CREATE_PROJECT[] = "Create new project for your application";
 const char const TEXT_ACTION_BRIEF_OPEN_PROJECT[]   = "Open project for develop your application";
-const char const TEXT_ACTION_BRIEF_REMOVE_CONFIG[]  = "Remove config.";
+const char const TEXT_ACTION_BRIEF_REMOVE_PROJECT[]  = "Remove project.";
 
 //removeConfig text
 const char const TEXT_REMOVE_CONFIG_CONFIRMATION[]  = "Are you remove config?(yes/no)\n";
