@@ -67,7 +67,7 @@ ChooseList* CreateChooseList(const char* const name,const char* const brief,cons
  *  
  * ************************************
  */
-void JoinChooseList(const ChooseList* const new,ChooseList* list);
+void JoinChooseList(ChooseList* new,ChooseList* list);
 
 /**
  * ************************************

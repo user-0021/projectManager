@@ -6,6 +6,8 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 bool CreateDirProcess(const char* const path,int mode)
 {
@@ -91,7 +93,7 @@ bool CreateAndWriteFileProcess(const char* const path,const char*const writeText
   else
   {//no problem
 
-    fprintf(fp, writeText);
+    fprintf(fp,"%s",writeText);
     fclose(fp);
     status = true;
   }

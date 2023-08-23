@@ -150,7 +150,7 @@ ProjectList* GetProjectList()
   snprintf(objectPath,PATH_MAX,"%s/",PATH_PROJECT_LIST_DIR);
   size_t directoryPathSize = strlen(objectPath);
 
-  char* tmp[PATH_MAX];
+  char tmp[PATH_MAX];
   while (dp != NULL) 
   {//statでファイルかも確認
     strcat(objectPath,dp->d_name);
@@ -176,6 +176,7 @@ ProjectList* GetProjectList()
       memcpy(data,tmp,strSize);
       data[strSize-1] = '\0';//\n削除
       node->projectName = data;
+
       //scan Brief
       fgets(tmp,PATH_MAX,fp);
       strSize = strlen(tmp);
@@ -183,6 +184,7 @@ ProjectList* GetProjectList()
       memcpy(data,tmp,strSize);
       data[strSize-1] = '\0';//\n削除
       node->projectBrief = data;
+
       //scan Path
       fgets(tmp,PATH_MAX,fp);
       strSize = strlen(tmp);
@@ -190,6 +192,7 @@ ProjectList* GetProjectList()
       memcpy(data,tmp,strSize);
       data[strSize-1] = '\0';//\n削除
       node->projectPath = data;
+      
       //scan Lang
       fscanf(fp,"%u",&node->projectLang);
       //scan Github
