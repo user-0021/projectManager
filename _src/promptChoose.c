@@ -9,7 +9,7 @@ uint32_t OutPutChooseList(const ChooseList* const list)
 {
   printf("\n\n\n\n--------------------Please Selsect--------------------\n\n");
   uint32_t counter=0;
-  ChooseList* itr = list;
+  const ChooseList* itr = list;
   while(itr != 0)
   {
     counter++;
@@ -24,13 +24,13 @@ uint32_t OutPutChooseList(const ChooseList* const list)
   
   printf("------------------------------------------------------\n\n");
 
-  printf(TEXT_CHOOSE_LIST_TYPE_NUMBER);
+  printf("%s",TEXT_CHOOSE_LIST_TYPE_NUMBER);
 
   uint32_t inNum = 0;
   scanf("%u",&inNum);
   while(inNum == 0 || inNum > counter)
   {
-    printf(TEXT_CHOOSE_LIST_RETYPE_NUMBER);
+    printf("%s",TEXT_CHOOSE_LIST_RETYPE_NUMBER);
     if(scanf("%u",&inNum) <= 0)
     {
       while(getchar() != '\n');
@@ -75,7 +75,7 @@ ChooseList* CreateChooseList(const char* const name,const char* const brief,cons
   return ret;
 }
 
-void JoinChooseList(const ChooseList* const new,ChooseList* list)
+void JoinChooseList(ChooseList* new,ChooseList* list)
 {
   ChooseList* listEnd = list;
 

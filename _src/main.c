@@ -30,7 +30,7 @@ int main(int argc,char* argv[])
   char* user;
   if((user = getlogin()) == NULL)
   {//failed getlogin
-    printf(TEXT_SETUP_FAILED_USER_GET);
+    printf("%s",TEXT_SETUP_FAILED_USER_GET);
     exit(EXIT_FAILURE);
   }
   
@@ -133,11 +133,11 @@ void RemoveProject()
 
     if(DeleteProject(head))
     {
-      printf(TEXT_REMOVE_PROJECT_SUCCESS);
+      printf("%s",TEXT_REMOVE_PROJECT_SUCCESS);
     }
     else
     {
-      printf(TEXT_REMOVE_PROJECT_FAILED);
+      printf("%s",TEXT_REMOVE_PROJECT_FAILED);
     }
   }
 }
@@ -151,31 +151,31 @@ void CreateProject()//クソコードを生成してしまった気がする
 
   bool useGithub = false;
 
-  printf(TEXT_ROLLE_OUT);//flash prompt
+  printf("%s",TEXT_ROLLE_OUT);//flash prompt
   
   //print data
   printf(TEXT_CREATE_PROFECT_INPUT_STATUS,projectName,projectBrief,projectLanguage,projectPath,TEXT_BOOL[useGithub]);
   
   //get project name
-  printf(TEXT_CREATE_PROFECT_INPUT_NAME);
+  printf("%s",TEXT_CREATE_PROFECT_INPUT_NAME);
 
   projectName = scanStr();
 
   while(!CanUseFileName(projectName))
   {
-    printf(TEXT_CREATE_PROFECT_RETYPE_NAME);
+    printf("%s",TEXT_CREATE_PROFECT_RETYPE_NAME);
     free(projectName);
     
     projectName = scanStr();
   }
   
-  printf(TEXT_ROLLE_OUT);//flash prompt
+  printf("%s",TEXT_ROLLE_OUT);//flash prompt
   
   //print data
   printf(TEXT_CREATE_PROFECT_INPUT_STATUS,projectName,projectBrief,projectLanguage,projectPath,TEXT_BOOL[useGithub]);
 
   //get project brief
-  printf(TEXT_CREATE_PROFECT_INPUT_BRIEF);
+  printf("%s",TEXT_CREATE_PROFECT_INPUT_BRIEF);
   projectBrief = scanStr();
   
   //print data
@@ -196,19 +196,19 @@ void CreateProject()//クソコードを生成してしまった気がする
   //print data
   printf(TEXT_CREATE_PROFECT_INPUT_STATUS,projectName,projectBrief,projectLanguage,projectPath,TEXT_BOOL[useGithub]);
 
-  printf(TEXT_CREATE_PROFECT_INPUT_PATH);
+  printf("%s",TEXT_CREATE_PROFECT_INPUT_PATH);
 
   //get program path
   projectPath = scanPath();
 
   while(!CheckPath(projectPath))
   {
-    printf(TEXT_CREATE_PROFECT_RETYPE_PATH);
+    printf("%s",TEXT_CREATE_PROFECT_RETYPE_PATH);
     free(projectPath);
     
     projectPath = scanPath();
   }
-  realloc(projectPath,strlen(projectPath)+strlen(projectName)+1);
+  projectPath = realloc(projectPath,strlen(projectPath)+strlen(projectName)+1);
   strcat(projectPath,projectName);
     
   //print data
@@ -216,7 +216,7 @@ void CreateProject()//クソコードを生成してしまった気がする
   
 
   //get use github 
-  printf(TEXT_CREATE_PROFECT_INPUT_GITHUB);
+  printf("%s",TEXT_CREATE_PROFECT_INPUT_GITHUB);
   useGithub = GetYESorNO();
     
   //print data

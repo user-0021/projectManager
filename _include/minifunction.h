@@ -4,6 +4,6 @@
 
 bool GetYESorNO();
 bool CanUseFileName(const char* name);
-bool CheckPath(char* path);
+bool CheckPath(const char* const path);
 char* scanStr();
 char* scanPath();

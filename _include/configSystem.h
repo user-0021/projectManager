@@ -17,11 +17,11 @@ typedef struct _projectList  ProjectList;
 struct _projectList
 {
   /// @brief projectName
-  const char* projectName;
+  char* projectName;
   /// @brief projectBrief
-  const char* projectBrief;
+  char* projectBrief;
   /// @brief projectPath
-  const char* projectPath;
+  char* projectPath;
   /// @brief projectLang
   uint32_t projectLang;
   /// @brief useGithub

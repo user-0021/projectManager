@@ -18,7 +18,7 @@ bool GetYESorNO()
   scanf("%s",buf);
   while((strcmp(buf,"yes") != 0)&&(strcmp(buf,"no") != 0))
   {
-    printf(TEXT_REMOVE_CONFIG_PLEASE_RETYPE);
+    printf("%s",TEXT_REMOVE_CONFIG_PLEASE_RETYPE);
     scanf("%s",buf);
   }
 
@@ -57,10 +57,10 @@ bool CanUseFileName(const char* name)
 }
 
 
-bool CheckPath(char* path)
+bool CheckPath(const char* const path)
 {
   struct stat st;
-  printf(path);
+  
   return !stat(path,&st);
 }
 
