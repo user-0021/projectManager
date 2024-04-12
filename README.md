@@ -1,4 +1,4 @@
-# projectManeger
+# projectManager
 ## 説明
 このプログラムは複数のプロジェクトを管理するためのプログラムです。
 ## 使い方
