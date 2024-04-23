@@ -1,0 +1,11 @@
+#Project info
+CC = gcc
+CFLAG =
+OBJ_FLAG =
+SOURCE_DIR = src
+INCLUDE_DIR = include
+OBJ_DIR = obj
+
+
+#Output
+OUTPUT = pmn.exe

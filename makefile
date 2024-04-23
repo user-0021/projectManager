@@ -1,41 +1,16 @@
-#コンパイラの指定
-CC     = gcc
+RM = cmd.exe /C del
 
-#コンパイルオプション
-CFLAGS =
+#build executable file
+build:pmn.exe
 
-#実行ファイル名
-TARGET = pmn
+#make objs
+obj\main.o: src\main.c
+	gcc -o obj\main.o src\main.c  -I include -c
 
-#コンパイルするファイル
-SRCDIRS  = ./_src 
+pmn.exe: obj\main.o
+	gcc -o pmn.exe  obj\main.o
 
-SRCS    = $(SRCDIRS:%=%/*.c)
+all: clean pmn.exe
 
-#オブジェクトファイル
-_OBJS   = $(SRCS:%.c=%.o)
-OBJS   = $(notdir $(_OBJS))
-
-
-#ヘッダファイルの場所
-INCDIR = -I _include
-
-#ライブラリのディレクトリ
-LIBDIR  = 
-
-#追加するライブラリファイル
-LIBS    = 
-
-#ターゲットファイル生成
-$(TARGET): $(OBJS)
-	$(CC) -o $@ $^ $(LIBDIR) $(LIBS)
-	
-#オブジェクトファイル生成
-$(OBJS): $(SRCS)
-	$(CC) $(CFLAGS) $(INCDIR) -c $(SRCS)
-	
-# (11)"make all"で make cleanとmakeを同時に実施。
-all: clean $(OBJS) $(TARGET)
-# (12).oファイル、実行ファイル、.dファイルを削除
 clean:
-	-rm -f $(OBJS) $(TARGET) $(OBJDIR)/*.d
+	$(RM) pmn.exe obj\main.o
