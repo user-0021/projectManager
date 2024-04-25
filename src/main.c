@@ -174,13 +174,13 @@ int main(int argc,char** argv){
 
 			rewinddir(srcD);//reset
 
-			fprintf(fd,"%s: ",outFile);
+			fprintf(fd,"%s:",outFile);
 			//generate executable
 			while ((dp = readdir(srcD)) != NULL) {
 				char* p = strrchr(dp->d_name,'.');
 				if(p != NULL && strcmp(p,".c") == 0){
 					*p = '\0';
-					fprintf(fd,"%s\\%s.o",objDir,dp->d_name);
+					fprintf(fd," %s\\%s.o",objDir,dp->d_name);
 				}
 			}
 			fprintf(fd,"\n\t%s -o %s %s",cC,outFile,cFlag);
