@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <dirent.h>
-#include "linear_list.h"
+// #include "linear_list.h"
 
 #ifdef WIN32
 #include <direct.h>
@@ -116,11 +116,14 @@ int main(int argc,char** argv){
 					settingName[4],settingName[5],settingName[6],settingName[7]);
 
 			if(p != NULL){
-				char* data = settingData[(p-settingName[0])/sizeof(settingName[0])];
+				char** data = &settingData[(p-settingName[0])/sizeof(settingName[0])];
 
 				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					data = malloc(strlen(p) + 1);
-					strcpy(data,p);
+					*data = malloc(strlen(p) + 1);
+					strcpy(*data,p);
+				}else{
+					*data = malloc(1);
+					*(*data) = '\0';
 				}
 			}
 		}
@@ -130,14 +133,14 @@ int main(int argc,char** argv){
 		if((fd = fopen("Makefile","w")) != NULL){
 
 			#ifdef WIN32
-			fprintf(fd,"RM = cmd.exe /C del\n\n",outFile);
+			fprintf(fd,"RM = cmd.exe /C del\n\n",settingData[6]);
 			#endif
 
 			//generate make build
-			fprintf(fd,"#build executable file\nbuild:%s\n\n",outFile);
+			fprintf(fd,"#build executable file\nbuild:%s\n\n",settingData[6]);
 			fprintf(fd,"#make objs\n");
 
-			DIR* srcD = opendir(srcDir);
+			DIR* srcD = opendir(settingData[3]);
 			if(srcD == NULL){
 				perror("open object dir");
 				exit(1);
@@ -149,47 +152,47 @@ int main(int argc,char** argv){
 				char* p = strrchr(dp->d_name,'.');
 				if(p != NULL && strcmp(p,".c") == 0){
 					*p = '\0';
-					fprintf(fd,"%s\\%s.o: %s\\%s.c\n",objDir,dp->d_name,srcDir,dp->d_name);
-					if(incDir[0] == '\0'){
-						fprintf(fd,"\t%s -o %s\\%s.o %s\\%s.c %s -c\n\n",cC,objDir,dp->d_name,srcDir,dp->d_name,objFlag);
+					fprintf(fd,"%s\\%s.o: %s\\%s.c\n",settingData[5],dp->d_name,settingData[3],dp->d_name);
+					if(settingData[4][0] == '\0'){
+						fprintf(fd,"\t%s -o %s\\%s.o %s\\%s.c %s -c\n\n",settingData[0],settingData[5],dp->d_name,settingData[3],dp->d_name,settingData[2]);
 					}else{
-						fprintf(fd,"\t%s -o %s\\%s.o %s\\%s.c %s -I %s -c\n\n",cC,objDir,dp->d_name,srcDir,dp->d_name,objFlag,incDir);
+						fprintf(fd,"\t%s -o %s\\%s.o %s\\%s.c %s -I %s -c\n\n",settingData[0],settingData[5],dp->d_name,settingData[3],dp->d_name,settingData[2],settingData[4]);
 					}
 				}
 			}
 
 			rewinddir(srcD);//reset
 
-			fprintf(fd,"%s:",outFile);
+			fprintf(fd,"%s:",settingData[6]);
 			//generate executable
 			while ((dp = readdir(srcD)) != NULL) {
 				char* p = strrchr(dp->d_name,'.');
 				if(p != NULL && strcmp(p,".c") == 0){
 					*p = '\0';
-					fprintf(fd," %s\\%s.o",objDir,dp->d_name);
+					fprintf(fd," %s\\%s.o",settingData[5],dp->d_name);
 				}
 			}
-			fprintf(fd,"\n\t%s -o %s %s",cC,outFile,cFlag);
+			fprintf(fd,"\n\t%s -o %s %s",settingData[0],settingData[6],settingData[1]);
 			rewinddir(srcD);
 			while ((dp = readdir(srcD)) != NULL) {
 				char* p = strrchr(dp->d_name,'.');
 				if(p != NULL && strcmp(p,".c") == 0){
 					*p = '\0';
-					fprintf(fd," %s\\%s.o",objDir,dp->d_name);
+					fprintf(fd," %s\\%s.o",settingData[5],dp->d_name);
 				}
 			}
 
 			//generate make all
-			fprintf(fd,"\n\nall: clean %s",outFile);
+			fprintf(fd,"\n\nall: clean %s",settingData[6]);
 
 			//generate make clean
-			fprintf(fd,"\n\nclean:\n\t$(RM) %s",outFile);
+			fprintf(fd,"\n\nclean:\n\t$(RM) %s",settingData[6]);
 			rewinddir(srcD);
 			while ((dp = readdir(srcD)) != NULL) {
 				char* p = strrchr(dp->d_name,'.');
 				if(p != NULL && strcmp(p,".c") == 0){
 					*p = '\0';
-					fprintf(fd," %s\\%s.o",objDir,dp->d_name);
+					fprintf(fd," %s\\%s.o",settingData[5],dp->d_name);
 				}
 			}
 
