@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <dirent.h>
+#include "linear_list.h"
 
 #ifdef WIN32
 #include <direct.h>
@@ -11,9 +12,19 @@
 #define VERSION "v0.0.0"
 
 int strsCmpOR(char const* str1,int argc,...);
+char* strGetMatchPattern(char const* str1,int argc,...);
+
+const char settingName[7][12] = {  {"CC"},
+									{"CFLAG"},
+									{"OBJ_FLAG"},
+									{"SOURCE_DIR"},
+									{"INCLUDE_DIR"},
+									{"OBJ_DIR"},
+									{"OUTPUT"}
+								};
 
 int main(int argc,char** argv){
-	
+
 	//show version
 	if(argc == 1 || strsCmpOR(argv[1],4,"version","v","-v","/v") == 0 ){
 		printf("%s\n",VERSION);
@@ -88,54 +99,29 @@ int main(int argc,char** argv){
 			fprintf(stderr,".projectManagerConfig not found.\n");
 		}
 
-		//各種環境変数
-		char cC[512] = "gcc";
-		char cFlag[512] = "";
-		char objFlag[512] = "";
-		char srcDir[512] = "";
-		char incDir[512] = "";
-		char objDir[512] = "";
-		char outFile[512] = "out.exe";
+		//各種環境変数 
+		char* settingData[sizeof(settingName) / sizeof(settingName[0])] = {};
 
 		//めんどいので最大文字数1024文字でやる
 		char line[1024];
 
 		while(fgets(line,sizeof(line),fd) != NULL){
 			char* p = strtok(line," \t\r\n=");
-			if(p == NULL || *p == '#'){
-				continue;
-			}
 
-			if(strcmp(p,"CC") == 0){
+			if(p == NULL)
+				continue;//エラー回避
+
+			p = strGetMatchPattern(p,sizeof(settingName) / sizeof(settingName[0]),
+					settingName[0],settingName[1],settingName[2],settingName[3],
+					settingName[4],settingName[5],settingName[6],settingName[7]);
+
+			if(p != NULL){
+				char* data = settingData[(p-settingName[0])/sizeof(settingName[0])];
+
 				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(cC,p);
+					data = malloc(strlen(p) + 1);
+					strcpy(data,p);
 				}
-			}else if(strcmp(p,"CFLAG") == 0){
-				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(cFlag,p);
-				}
-			}else if(strcmp(p,"OBJ_FLAG") == 0){
-				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(objFlag,p);
-				}
-			}else if(strcmp(p,"SOURCE_DIR") == 0){
-				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(srcDir,p);
-				}
-			}else if(strcmp(p,"INCLUDE_DIR") == 0){
-				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(incDir,p);
-				}
-			}else if(strcmp(p,"OBJ_DIR") == 0){
-				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(objDir,p);
-				}
-			}else if(strcmp(p,"OUTPUT") == 0){
-				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(outFile,p);
-				}
-			}else{
-				fprintf(stderr,"%s is unknown token.\n",p);
 			}
 		}
 		
@@ -234,4 +220,22 @@ int strsCmpOR(char const* str1,int argc,...){
     va_end(args);
 
 	return 1;
+}
+
+char* strGetMatchPattern(char const* str1,int argc,...){
+	va_list args;
+    va_start(args, argc);
+
+	int i;
+	for(i = 0;i < argc;i++){
+		char* tmp = va_arg(args,char*);
+		if(strcmp(str1,tmp) == 0){
+			va_end(args);
+			return tmp;
+		}
+	}
+
+    va_end(args);
+
+	return NULL;
 }
