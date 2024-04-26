@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <dirent.h>
-// #include "linear_list.h"
+#include "linear_list.h"
 
 #ifdef WIN32
 #include <direct.h>
@@ -140,60 +140,57 @@ int main(int argc,char** argv){
 			fprintf(fd,"#build executable file\nbuild:%s\n\n",settingData[6]);
 			fprintf(fd,"#make objs\n");
 
+
+			//create file list
+    		struct dirent *dp;
 			DIR* srcD = opendir(settingData[3]);
 			if(srcD == NULL){
 				perror("open object dir");
 				exit(1);
 			}
 
-    		struct dirent *dp;
-			//object file
+			char** files = LINEAR_LIST_CREATE(char*);
 			while ((dp = readdir(srcD)) != NULL) {
 				char* p = strrchr(dp->d_name,'.');
 				if(p != NULL && strcmp(p,".c") == 0){
 					*p = '\0';
-					fprintf(fd,"%s\\%s.o: %s\\%s.c\n",settingData[5],dp->d_name,settingData[3],dp->d_name);
-					if(settingData[4][0] == '\0'){
-						fprintf(fd,"\t%s -o %s\\%s.o %s\\%s.c %s -c\n\n",settingData[0],settingData[5],dp->d_name,settingData[3],dp->d_name,settingData[2]);
-					}else{
-						fprintf(fd,"\t%s -o %s\\%s.o %s\\%s.c %s -I %s -c\n\n",settingData[0],settingData[5],dp->d_name,settingData[3],dp->d_name,settingData[2],settingData[4]);
-					}
+					char* tmp = malloc(strlen(dp->d_name) + 1);
+					strcpy(tmp,dp->d_name);
+
+					LINEAR_LIST_PUSH(files,tmp);
 				}
 			}
-
-			rewinddir(srcD);//reset
-
-			fprintf(fd,"%s:",settingData[6]);
-			//generate executable
-			while ((dp = readdir(srcD)) != NULL) {
-				char* p = strrchr(dp->d_name,'.');
-				if(p != NULL && strcmp(p,".c") == 0){
-					*p = '\0';
-					fprintf(fd," %s\\%s.o",settingData[5],dp->d_name);
+			closedir(srcD);
+			//object file
+			char** iter;
+			LINEAR_LIST_FOREACH(files,iter){
+				fprintf(fd,"%s\\%s.o: %s\\%s.c\n",settingData[5],*iter,settingData[3],*iter);
+				if(settingData[4][0] == '\0'){
+					fprintf(fd,"\t%s -o %s\\%s.o %s\\%s.c %s -c\n\n",settingData[0],settingData[5],*iter,settingData[3],*iter,settingData[2]);
+				}else{
+					fprintf(fd,"\t%s -o %s\\%s.o %s\\%s.c %s -I %s -c\n\n",settingData[0],settingData[5],*iter,settingData[3],*iter,settingData[2],settingData[4]);
 				}
+			}
+			
+			//generate executable
+			fprintf(fd,"%s:",settingData[6]);
+			LINEAR_LIST_FOREACH(files,iter){
+				fprintf(fd," %s\\%s.o",settingData[5],*iter);
 			}
 			fprintf(fd,"\n\t%s -o %s %s",settingData[0],settingData[6],settingData[1]);
-			rewinddir(srcD);
-			while ((dp = readdir(srcD)) != NULL) {
-				char* p = strrchr(dp->d_name,'.');
-				if(p != NULL && strcmp(p,".c") == 0){
-					*p = '\0';
-					fprintf(fd," %s\\%s.o",settingData[5],dp->d_name);
-				}
+			LINEAR_LIST_FOREACH(files,iter){
+				fprintf(fd," %s\\%s.o",settingData[5],*iter);
 			}
+
 
 			//generate make all
 			fprintf(fd,"\n\nall: clean %s",settingData[6]);
 
+
 			//generate make clean
 			fprintf(fd,"\n\nclean:\n\t$(RM) %s",settingData[6]);
-			rewinddir(srcD);
-			while ((dp = readdir(srcD)) != NULL) {
-				char* p = strrchr(dp->d_name,'.');
-				if(p != NULL && strcmp(p,".c") == 0){
-					*p = '\0';
-					fprintf(fd," %s\\%s.o",settingData[5],dp->d_name);
-				}
+			LINEAR_LIST_FOREACH(files,iter){
+				fprintf(fd," %s\\%s.o",settingData[5],*iter);
 			}
 
 			fclose(fd);
