@@ -6,6 +6,11 @@
 
 #ifdef WIN32
 #include <direct.h>
+#define S "\\" 
+#else
+#include <sys/stat.h>
+#include <unistd.h>
+#define S "/"
 #endif
 
 #define VERSION "v0.0.0"
@@ -32,7 +37,7 @@ int main(int argc,char** argv){
 		}
 
 		//get current path
-		projectPath = _getcwd(NULL,0);
+		projectPath = getcwd(NULL,0);
 		if(projectPath == NULL){
 			fprintf(stderr,"Project directory path invalid.\n");
 		}
@@ -41,6 +46,7 @@ int main(int argc,char** argv){
 
 		//check project file
 		FILE* fd = fopen(".projectManagerConfig","r");
+
 		if(fd != NULL){
 			fclose(fd);//Because un used.
 
@@ -72,6 +78,16 @@ int main(int argc,char** argv){
 			fprintf(fd,"#Project info\nCC = gcc\nCFLAG =\nOBJ_FLAG =\nSOURCE_DIR = src\n"
 			"INCLUDE_DIR = include\nOBJ_DIR = obj\n\n\n"
 			"#Output\nOUTPUT = out.exe\n");
+			#else
+			//mkdir
+			mkdir("src",0777);
+			mkdir("include",0777);
+			mkdir("obj",0777);
+			
+			//make file
+			fprintf(fd,"#Project info\nCC = gcc\nCFLAG =\nOBJ_FLAG =\nSOURCE_DIR = src\n"
+			"INCLUDE_DIR = include\nOBJ_DIR = obj\n\n\n"
+			"#Output\nOUTPUT = out\n");
 			#endif			
 			
 			fclose(fd);
@@ -79,6 +95,7 @@ int main(int argc,char** argv){
 
 		exit(0);
 	}
+
 
 	//build project
 	if(strsCmpOR(argv[1],4,"build","b","-b","/b") == 0){
@@ -95,7 +112,11 @@ int main(int argc,char** argv){
 		char srcDir[512] = "";
 		char incDir[512] = "";
 		char objDir[512] = "";
+		#ifdef WIN32
 		char outFile[512] = "out.exe";
+		#else
+		char outFile[512] = "out";
+		#endif
 
 		//めんどいので最大文字数1024文字でやる
 		char line[1024];
@@ -144,7 +165,9 @@ int main(int argc,char** argv){
 		if((fd = fopen("Makefile","w")) != NULL){
 
 			#ifdef WIN32
-			fprintf(fd,"RM = cmd.exe /C del\n\n",outFile);
+			fprintf(fd,"RM = cmd.exe /C del\n\n");
+			#else
+			fprintf(fd,"RM = rm\n\n");
 			#endif
 
 			//generate make build
@@ -163,11 +186,11 @@ int main(int argc,char** argv){
 				char* p = strrchr(dp->d_name,'.');
 				if(p != NULL && strcmp(p,".c") == 0){
 					*p = '\0';
-					fprintf(fd,"%s\\%s.o: %s\\%s.c\n",objDir,dp->d_name,srcDir,dp->d_name);
+					fprintf(fd,"%s"S"%s.o: %s"S"%s.c\n",objDir,dp->d_name,srcDir,dp->d_name);
 					if(incDir[0] == '\0'){
-						fprintf(fd,"\t%s -o %s\\%s.o %s\\%s.c %s -c\n\n",cC,objDir,dp->d_name,srcDir,dp->d_name,objFlag);
+						fprintf(fd,"\t%s -o %s"S"%s.o %s"S"%s.c %s -c\n\n",cC,objDir,dp->d_name,srcDir,dp->d_name,objFlag);
 					}else{
-						fprintf(fd,"\t%s -o %s\\%s.o %s\\%s.c %s -I %s -c\n\n",cC,objDir,dp->d_name,srcDir,dp->d_name,objFlag,incDir);
+						fprintf(fd,"\t%s -o %s"S"%s.o %s"S"%s.c %s -I %s -c\n\n",cC,objDir,dp->d_name,srcDir,dp->d_name,objFlag,incDir);
 					}
 				}
 			}
@@ -180,7 +203,7 @@ int main(int argc,char** argv){
 				char* p = strrchr(dp->d_name,'.');
 				if(p != NULL && strcmp(p,".c") == 0){
 					*p = '\0';
-					fprintf(fd,"%s\\%s.o",objDir,dp->d_name);
+					fprintf(fd,"%s"S"%s.o",objDir,dp->d_name);
 				}
 			}
 			fprintf(fd,"\n\t%s -o %s %s",cC,outFile,cFlag);
@@ -189,7 +212,7 @@ int main(int argc,char** argv){
 				char* p = strrchr(dp->d_name,'.');
 				if(p != NULL && strcmp(p,".c") == 0){
 					*p = '\0';
-					fprintf(fd," %s\\%s.o",objDir,dp->d_name);
+					fprintf(fd," %s"S"%s.o",objDir,dp->d_name);
 				}
 			}
 
@@ -203,7 +226,7 @@ int main(int argc,char** argv){
 				char* p = strrchr(dp->d_name,'.');
 				if(p != NULL && strcmp(p,".c") == 0){
 					*p = '\0';
-					fprintf(fd," %s\\%s.o",objDir,dp->d_name);
+					fprintf(fd," %s"S"%s.o",objDir,dp->d_name);
 				}
 			}
 
@@ -215,8 +238,6 @@ int main(int argc,char** argv){
 
 		exit(0);
 	}
-
-
 }
 
 int strsCmpOR(char const* str1,int argc,...){
