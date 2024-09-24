@@ -2,3 +2,5 @@
 *.exe
 pmn
 .vscode
+*.swp
+*.swo

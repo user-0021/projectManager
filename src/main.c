@@ -7,6 +7,10 @@
 
 #ifdef WIN32
 #include <direct.h>
+#include <windows.h>
+#else
+#include <unistd.h>
+#define _getcwd(a,b) getcwd(a,b)
 #endif
 
 #define VERSION "v0.0.0"
@@ -14,13 +18,14 @@
 int strsCmpOR(char const* str1,int argc,...);
 char* strGetMatchPattern(char const* str1,int argc,...);
 
-const char settingName[7][12] = {  {"CC"},
+const char settingName[8][12] = {  {"CC"},
 									{"CFLAG"},
 									{"OBJ_FLAG"},
 									{"SOURCE_DIR"},
 									{"INCLUDE_DIR"},
 									{"OBJ_DIR"},
-									{"OUTPUT"}
+									{"OUTPUT"},
+									{"LIB"}
 								};
 
 int main(int argc,char** argv){
@@ -34,6 +39,7 @@ int main(int argc,char** argv){
 	//project init
 	if(strsCmpOR(argv[1],4,"init","i","-i","/i") == 0){
 		char* projectPath;
+
 
 		if(argv[2] != NULL){//change dir
 			if(chdir(argv[2]) != 0){
@@ -80,7 +86,7 @@ int main(int argc,char** argv){
 			_mkdir("obj");
 			
 			//make file
-			fprintf(fd,"#Project info\nCC = gcc\nCFLAG =\nOBJ_FLAG =\nSOURCE_DIR = src\n"
+			fprintf(fd,"#Project info\nCC = gcc\nCFLAG =\nOBJ_FLAG =\nLIBRARY=\nSOURCE_DIR = src\n"
 			"INCLUDE_DIR = include\nOBJ_DIR = obj\n\n\n"
 			"#Output\nOUTPUT = out.exe\n");
 			#endif			
@@ -121,6 +127,18 @@ int main(int argc,char** argv){
 				if((p = strtok(NULL," \t\r\n=")) != NULL){
 					*data = malloc(strlen(p) + 1);
 					strcpy(*data,p);
+
+					//複数トークンある場合
+					while((p = strtok(NULL," \t\r\n=")) != NULL){
+						char* tmp = *data;
+						*data = malloc(strlen(p) + strlen(tmp) + 2);
+						
+						strcpy(*data,tmp);
+						strcat(*data," ");
+						strcat(*data,p);
+						free(tmp);
+					}
+
 				}else{
 					*data = malloc(1);
 					*(*data) = '\0';
@@ -129,6 +147,14 @@ int main(int argc,char** argv){
 		}
 		
 		fclose(fd);
+
+		int i;
+		for(i = 0;i < sizeof(settingName) / sizeof(settingName[0]);i++){
+			if(settingData[i] == NULL){
+				settingData[i] = malloc(1);
+				settingData[i][0] = '\0';
+			}
+		}
 
 		if((fd = fopen("Makefile","w")) != NULL){
 
@@ -150,7 +176,7 @@ int main(int argc,char** argv){
 			}
 
 			char** files = LINEAR_LIST_CREATE(char*);
-			while ((dp = readdir(srcD)) != NULL) {
+			while ((dp = readdir(srcD)) != NULL) {//src
 				char* p = strrchr(dp->d_name,'.');
 				if(p != NULL && strcmp(p,".c") == 0){
 					*p = '\0';
@@ -160,15 +186,17 @@ int main(int argc,char** argv){
 					LINEAR_LIST_PUSH(files,tmp);
 				}
 			}
+
 			closedir(srcD);
+
 			//object file
 			char** iter;
 			LINEAR_LIST_FOREACH(files,iter){
 				fprintf(fd,"%s\\%s.o: %s\\%s.c\n",settingData[5],*iter,settingData[3],*iter);
 				if(settingData[4][0] == '\0'){
-					fprintf(fd,"\t%s -o %s\\%s.o %s\\%s.c %s -c\n\n",settingData[0],settingData[5],*iter,settingData[3],*iter,settingData[2]);
+					fprintf(fd,"\t%s %s -o %s\\%s.o %s\\%s.c %s -c\n\n",settingData[0],settingData[7],settingData[5],*iter,settingData[3],*iter,settingData[2]);
 				}else{
-					fprintf(fd,"\t%s -o %s\\%s.o %s\\%s.c %s -I %s -c\n\n",settingData[0],settingData[5],*iter,settingData[3],*iter,settingData[2],settingData[4]);
+					fprintf(fd,"\t%s %s -o %s\\%s.o %s\\%s.c %s -I %s -c\n\n",settingData[0],settingData[7],settingData[5],*iter,settingData[3],*iter,settingData[2],settingData[4]);
 				}
 			}
 			
@@ -177,10 +205,11 @@ int main(int argc,char** argv){
 			LINEAR_LIST_FOREACH(files,iter){
 				fprintf(fd," %s\\%s.o",settingData[5],*iter);
 			}
-			fprintf(fd,"\n\t%s -o %s %s",settingData[0],settingData[6],settingData[1]);
+			fprintf(fd,"\n\t%s %s -o %s",settingData[0],settingData[7],settingData[6]);
 			LINEAR_LIST_FOREACH(files,iter){
 				fprintf(fd," %s\\%s.o",settingData[5],*iter);
 			}
+			fprintf(fd," %s",settingData[1]);
 
 
 			//generate make all
