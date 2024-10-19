@@ -16,6 +16,7 @@
 #define VERSION "v0.0.0"
 
 int strsCmpOR(char const* str1,int argc,...);
+void parseToken(char* buffer,char* head);
 
 int main(int argc,char** argv){
 	
@@ -106,17 +107,13 @@ int main(int argc,char** argv){
 		}
 
 		//各種環境変数
-		char cC[512] = "gcc";
-		char cFlag[512] = "";
-		char objFlag[512] = "";
-		char srcDir[512] = "";
-		char incDir[512] = "";
-		char objDir[512] = "";
-		#ifdef WIN32
-		char outFile[512] = "out.exe";
-		#else
-		char outFile[512] = "out";
-		#endif
+		char cC[512] = {};
+		char cFlag[512] = {};
+		char objFlag[512] = {};
+		char srcDir[512] = {};
+		char incDir[512] = {};
+		char objDir[512] = {};
+		char outFile[512] = {};
 
 		//めんどいので最大文字数1024文字でやる
 		char line[1024];
@@ -128,33 +125,19 @@ int main(int argc,char** argv){
 			}
 
 			if(strcmp(p,"CC") == 0){
-				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(cC,p);
-				}
+				parseToken(cC,"");	
 			}else if(strcmp(p,"CFLAG") == 0){
-				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(cFlag,p);
-				}
+				parseToken(cFlag,"");	
 			}else if(strcmp(p,"OBJ_FLAG") == 0){
-				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(objFlag,p);
-				}
+				parseToken(objFlag,"");
 			}else if(strcmp(p,"SOURCE_DIR") == 0){
-				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(srcDir,p);
-				}
+				parseToken(srcDir,"");
 			}else if(strcmp(p,"INCLUDE_DIR") == 0){
-				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(incDir,p);
-				}
+				parseToken(incDir,"-I");
 			}else if(strcmp(p,"OBJ_DIR") == 0){
-				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(objDir,p);
-				}
+				parseToken(objDir,"");
 			}else if(strcmp(p,"OUTPUT") == 0){
-				if((p = strtok(NULL," \t\r\n=")) != NULL){
-					strcpy(outFile,p);
-				}
+				parseToken(outFile,"");
 			}else{
 				fprintf(stderr,"%s is unknown token.\n",p);
 			}
@@ -176,7 +159,7 @@ int main(int argc,char** argv){
 
 			DIR* srcD = opendir(srcDir);
 			if(srcD == NULL){
-				perror("open object dir");
+				perror("open src dir");
 				exit(1);
 			}
 
@@ -187,11 +170,8 @@ int main(int argc,char** argv){
 				if(p != NULL && strcmp(p,".c") == 0){
 					*p = '\0';
 					fprintf(fd,"%s"S"%s.o: %s"S"%s.c\n",objDir,dp->d_name,srcDir,dp->d_name);
-					if(incDir[0] == '\0'){
-						fprintf(fd,"\t%s -o %s"S"%s.o %s"S"%s.c %s -c\n\n",cC,objDir,dp->d_name,srcDir,dp->d_name,objFlag);
-					}else{
-						fprintf(fd,"\t%s -o %s"S"%s.o %s"S"%s.c %s -I %s -c\n\n",cC,objDir,dp->d_name,srcDir,dp->d_name,objFlag,incDir);
-					}
+					
+					fprintf(fd,"\t%s -o %s"S"%s.o %s"S"%s.c %s %s -c\n\n",cC,objDir,dp->d_name,srcDir,dp->d_name,objFlag,incDir);
 				}
 			}
 
@@ -203,10 +183,10 @@ int main(int argc,char** argv){
 				char* p = strrchr(dp->d_name,'.');
 				if(p != NULL && strcmp(p,".c") == 0){
 					*p = '\0';
-					fprintf(fd,"%s"S"%s.o",objDir,dp->d_name);
+					fprintf(fd,"%s"S"%s.o ",objDir,dp->d_name);
 				}
 			}
-			fprintf(fd,"\n\t%s -o %s %s",cC,outFile,cFlag);
+			fprintf(fd,"\n\t%s -o %s",cC,outFile);
 			rewinddir(srcD);
 			while ((dp = readdir(srcD)) != NULL) {
 				char* p = strrchr(dp->d_name,'.');
@@ -215,6 +195,7 @@ int main(int argc,char** argv){
 					fprintf(fd," %s"S"%s.o",objDir,dp->d_name);
 				}
 			}
+			fprintf(fd," %s",cFlag);
 
 			//generate make all
 			fprintf(fd,"\n\nall: clean %s",outFile);
@@ -256,3 +237,35 @@ int strsCmpOR(char const* str1,int argc,...){
 
 	return 1;
 }
+
+void parseToken(char* buffer,char* head){
+	char *p;
+	if((p = strtok(NULL," \t\r=")) != NULL){
+		char* pos;
+
+		while((pos = strchr(p,'\n')) == NULL){
+			if(strlen(buffer) != 0)
+				strcat(buffer," ");
+			
+			if(strlen(p) != 0){
+				strcat(buffer,head);
+				strcat(buffer,p);
+			}
+
+			p = strtok(NULL," \t\r=");
+		} 
+					
+		if(pos != p){	
+			*pos = '\0';
+
+			if(strlen(buffer) != 0)
+				strcat(buffer," ");
+	
+			if(strlen(p) != 0){
+				strcat(buffer,head);
+				strcat(buffer,p);
+			}
+		}
+	}		
+}
+
