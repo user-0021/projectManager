@@ -1,0 +1,13 @@
+#Project info
+CC = gcc
+CFLAG =
+OBJ_FLAG =
+LIBRARY=
+SOURCE_DIR = src
+INCLUDE_DIR = include
+OBJ_DIR = obj
+LIB =
+
+
+#Output
+OUTPUT = pmn

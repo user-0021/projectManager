@@ -11,6 +11,7 @@
 #define S '\\'
 #else
 #include <unistd.h>
+#include <sys/stat.h>
 #define _getcwd(a,b) getcwd(a,b)
 #define S '/'
 #endif
@@ -89,8 +90,18 @@ int main(int argc,char** argv){
 			
 			//make file
 			fprintf(fd,"#Project info\nCC = gcc\nCFLAG =\nOBJ_FLAG =\nLIBRARY=\nSOURCE_DIR = src\n"
-			"INCLUDE_DIR = include\nOBJ_DIR = obj\n\n\n"
+			"INCLUDE_DIR = include\nOBJ_DIR = obj\nLIB =\n\n\n"
 			"#Output\nOUTPUT = out.exe\n");
+			#else
+			//mkdir
+			mkdir("src",0755);
+			mkdir("include",0755);
+			mkdir("obj",0755);
+			
+			//make file
+			fprintf(fd,"#Project info\nCC = gcc\nCFLAG =\nOBJ_FLAG =\nLIBRARY=\nSOURCE_DIR = src\n"
+			"INCLUDE_DIR = include\nOBJ_DIR = obj\nLIB =\n\n\n"
+			"#Output\nOUTPUT = out\n");
 			#endif			
 			
 			fclose(fd);
@@ -132,8 +143,8 @@ int main(int argc,char** argv){
 				//トークン列の切り分け
 				while((p = strtok(NULL," \t\r\n=")) != NULL){
 					char* tmp = malloc(strlen(p) + 1);
-					
-					strcat(tmp,p);
+					strcpy(tmp,p);
+
 					LINEAR_LIST_PUSH(list,tmp);
 				}
 			}
@@ -154,14 +165,13 @@ int main(int argc,char** argv){
 			fprintf(fd,"#build executable file\nbuild:%s\n\n",outFile);
 			fprintf(fd,"#make objs\n");
 
-
 			//create file list
 			char*** files = LINEAR_LIST_CREATE(char**);
 			
 			//add files
-			char*** iter;
-			LINEAR_LIST_FOREACH(settingData[3],iter){
-				DIR* srcD = opendir(**iter);
+			char** itr;
+			LINEAR_LIST_FOREACH(settingData[3],itr){
+				DIR* srcD = opendir(*itr);
 				if(srcD == NULL){
 					perror("open object dir");
 					exit(1);
@@ -172,17 +182,17 @@ int main(int argc,char** argv){
 					char* p = strrchr(dp->d_name,'.');
 					if(p != NULL && strcmp(p,".c") == 0){
 						char** tmp = malloc(sizeof(char*)*2);
-						tmp[0] = malloc(strlen(**iter) + strlen(dp->d_name) + 2);
+						tmp[0] = malloc(strlen(*itr) + strlen(dp->d_name) + 2);
 						tmp[1] = malloc(strlen(objectDirectory) + strlen(dp->d_name) + 2);
 						
-						memset(tmp[0],0,strlen(**iter) + strlen(dp->d_name) + 2);
+						memset(tmp[0],0,strlen(*itr) + strlen(dp->d_name) + 2);
 						memset(tmp[1],0,strlen(objectDirectory) + strlen(dp->d_name) + 2);
 						
-						strcpy(tmp[0],**iter);
+						strcpy(tmp[0],*itr);
 						strcpy(tmp[1],objectDirectory);
 
-						if((**iter)[strlen(**iter)-1] != S)
-							tmp[0][strlen(**iter)] = S;
+						if((*itr)[strlen(*itr)-1] != S)
+							tmp[0][strlen(*itr)] = S;
 
 						if(objectDirectory[strlen(objectDirectory)-1] != S)
 							tmp[1][strlen(objectDirectory)] = S;
@@ -192,7 +202,7 @@ int main(int argc,char** argv){
 
 						p = strrchr(tmp[1],'.');
 						p[1] = 'o';
-						p[2] = '\n';
+						p[2] = '\0';
 	
 						LINEAR_LIST_PUSH(files,tmp);
 					}
@@ -201,6 +211,7 @@ int main(int argc,char** argv){
 				closedir(srcD);
 			}
 			
+			char*** iter;
 			//object file
 			LINEAR_LIST_FOREACH(files,iter){
 				fprintf(fd,"%s: %s\n",(*iter)[1],(*iter)[0]);
@@ -208,21 +219,21 @@ int main(int argc,char** argv){
 	
 				fprintf(fd,"\t%s",compiler);
 				
-				char*** libs;
+				char** libs;
 				LINEAR_LIST_FOREACH(settingData[7],libs){
-					fprintf(fd," %s",**libs);
+					fprintf(fd," %s",*libs);
 				}			
 				
 				fprintf(fd," -o %s %s",(*iter)[1],(*iter)[0]);
 
-				char*** includeFiles;
+				char** includeFiles;
 				LINEAR_LIST_FOREACH(settingData[4],includeFiles){
-					fprintf(fd," -I %s",**includeFiles);
+					fprintf(fd," -I %s",*includeFiles);
 				}			
 
-				char*** objFlags;
+				char** objFlags;
 				LINEAR_LIST_FOREACH(settingData[2],objFlags){
-					fprintf(fd," %s",**objFlags);
+					fprintf(fd," %s",*objFlags);
 				}
 				
 				fprintf(fd," -c\n\n");
@@ -236,9 +247,9 @@ int main(int argc,char** argv){
 	
 			fprintf(fd,"\n\t%s",compiler);
 				
-			char*** libs;
+			char** libs;
 			LINEAR_LIST_FOREACH(settingData[7],libs){
-				fprintf(fd," %s",**libs);
+				fprintf(fd," %s",*libs);
 			}			
 				
 			fprintf(fd," -o %s",outFile);
@@ -247,9 +258,9 @@ int main(int argc,char** argv){
 				fprintf(fd," %s",(*iter)[1]);
 			}
 	
-			char*** cFlags;
+			char** cFlags;
 			LINEAR_LIST_FOREACH(settingData[1],cFlags){
-				fprintf(fd," %s",**cFlags);
+				fprintf(fd," %s",*cFlags);
 			}
 
 			//generate make all

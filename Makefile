@@ -1,11 +1,17 @@
 #build executable file
-build:(null)
+build:pmn
 
 #make objs
-(null):
-	(null) -o (null)
+obj/main.o: src/main.c
+	gcc -o obj/main.o src/main.c -I include -c
 
-all: clean (null)
+obj/linear_list.o: src/linear_list.c
+	gcc -o obj/linear_list.o src/linear_list.c -I include -c
+
+pmn: obj/main.o obj/linear_list.o
+	gcc -o pmn obj/main.o obj/linear_list.o
+
+all: clean pmn
 
 clean:
-	$(RM) (null)
+	$(RM) pmn obj/main.o obj/linear_list.o
