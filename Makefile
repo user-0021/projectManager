@@ -1,16 +1,11 @@
-RM = rm
-
 #build executable file
-build:out
+build:(null)
 
 #make objs
-obj/main.o: src/main.c
-	gcc -o obj/main.o src/main.c  -I include -c
+(null):
+	(null) -o (null)
 
-out: obj/main.o
-	gcc -o out  obj/main.o
-
-all: clean out
+all: clean (null)
 
 clean:
-	$(RM) out obj/main.o
+	$(RM) (null)
