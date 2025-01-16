@@ -163,7 +163,7 @@ int main(int argc,char** argv){
 
 			//generate make build
 			fprintf(fd,"#build executable file\nbuild:%s\n\n",outFile);
-			fprintf(fd,"#make objs\n");
+			fprintf(fd,"#make objs\nobj\n\t@mkdir obj\n\n");
 
 			//create file list
 			char*** files = LINEAR_LIST_CREATE(char**);
