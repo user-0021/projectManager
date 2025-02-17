@@ -3,8 +3,8 @@ CC = gcc
 CFLAG =
 OBJ_FLAG =
 LIBRARY=
-SOURCE_DIR = src library/linear_list
-INCLUDE_DIR = include library/linear_list
+SOURCE_DIR = src library/linear_list library/stringLib
+INCLUDE_DIR = include library
 OBJ_DIR = obj
 LIB =
 

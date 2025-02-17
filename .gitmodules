@@ -1,3 +1,6 @@
 [submodule "library/linear_list"]
 	path = library/linear_list
 	url = https://github.com/user-0021/linear_list
+[submodule "library/stringLib"]
+	path = library/stringLib
+	url = https://github.com/user-0021/stringLib.git
