@@ -1,6 +1,6 @@
-#Project info
-CC = gcc
-CFLAG =
+#Project info 
+CC = gcc 
+C_FLAG = 
 OBJ_FLAG =
 LIBRARY=
 SOURCE_DIR = src library/linear_list library/stringLib

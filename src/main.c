@@ -19,15 +19,25 @@
 
 #define VERSION "v0.0.0"
 
+typedef enum{
+	ID_CC 			= 0,
+	ID_CFLAG 		= 1,
+	ID_OBJFLAG 		= 2,
+	ID_SOURCEDIR 	= 3,
+	ID_INCLUDEDIR 	= 4,
+	ID_OBJDIR 		= 5,
+	ID_OUTPUT 		= 6,
+	ID_LIB 			= 7
+} settingNameId;
 
-const char* settingName[8] = {  {"CC"},
-								{"CFLAG"},
-								{"OBJ_FLAG"},
-								{"SOURCE_DIR"},
-								{"INCLUDE_DIR"},
-								{"OBJ_DIR"},
-								{"OUTPUT"},
-								{"LIB"}
+const char* settingName[8] = {  "CC",
+								"C_FLAG",
+								"OBJ_FLAG",
+								"SOURCE_DIR",
+								"INCLUDE_DIR",
+								"OBJ_DIR",
+								"OUTPUT",
+								"LIB"
 							};
 
 void init(char* current);
@@ -43,7 +53,7 @@ int main(int argc,char** argv){
 	}
 
 	//project init
-	if(strlistOR(argv[1],4,"init","i","-i","/i") == 0){
+	else if(strlistOR(argv[1],4,"init","i","-i","/i") == 0){
 		init(argv[2]);
 		exit(0);
 	}
@@ -107,7 +117,7 @@ void init(char* current){
 		//make file
 		fprintf(fd,	"#Project info\n"
 					"CC = gcc\n"
-					"CFLAG =\n"
+					"C_FLAG =\n"
 					"OBJ_FLAG =\n"
 					"LIBRARY=\n"
 					"SOURCE_DIR = src\n"
@@ -126,7 +136,7 @@ void init(char* current){
 		//make file
 		fprintf(fd,	"#Project info\n"
 					"CC = gcc\n"
-					"CFLAG =\n"
+					"C_FLAG =\n"
 					"OBJ_FLAG =\n"
 					"LIBRARY=\n"
 					"SOURCE_DIR = src\n"
@@ -150,44 +160,57 @@ void build(){
 	}
 
 	//各種環境変数 
-	char** settingData[sizeof(settingName) / sizeof(settingName[0])] = {};//三重ポインタしてしまった
+	char** settingData[sizeof(settingName) / sizeof(settingName[0])] = {};
 	int i;
 	for(i = 0;i < (sizeof(settingName) / sizeof(settingName[0]));i++){
 		settingData[i] = LINEAR_LIST_CREATE(char*);
 	}
 
-	//めんどいので最大文字数1024文字でやる
-	char line[1024];
+	//めんどいので最大文字数をテケトーに決める
+	char line[4096 * 128];
 
 	while(fgets(line,sizeof(line),fd) != NULL){
+		while((line[strlen(line) - 2] == '\\') && (fgets(line + strlen(line) - 2,sizeof(line) - strlen(line),fd) != NULL));
+		line[strlen(line) - 1] = '\0';
+		if(strchr(line,'#') != NULL){
+			*strchr(line,'#') = '\0';
+		}
+
+		char* arg = strchr(line,'=');
 		char* p = strtok(line," \t\r\n=");
 
-		if(p == NULL)
+		if(p == NULL || arg == NULL)
 			continue;//エラー回避
+		
+		arg++;
+		char** res = strGetMatchPattern(p,sizeof(settingName) / sizeof(settingName[0]),
+				&settingName[0],&settingName[1],&settingName[2],&settingName[3],
+				&settingName[4],&settingName[5],&settingName[6],&settingName[7]);
 
-		p = strGetMatchPattern(p,sizeof(settingName) / sizeof(settingName[0]),
-				settingName[0],settingName[1],settingName[2],settingName[3],
-				settingName[4],settingName[5],settingName[6],settingName[7]);
-
-		if(p != NULL){
-			char** list = settingData[(p-settingName[0])/sizeof(settingName[0])];
-
+		if(res != NULL){
+			char** list = settingData[((void*)res-(void*)settingName)/sizeof(settingName[0])];
+			
 			//トークン列の切り分け
-			while((p = strtok(NULL," \t\r\n=")) != NULL){
+			p = strtok(arg," ");
+			if(p == NULL)
+				continue;
+				
+			do{
 				char* tmp = malloc(strlen(p) + 1);
 				strcpy(tmp,p);
 
 				LINEAR_LIST_PUSH(list,tmp);
-			}
+			}while ((p = strtok(NULL," ")) != NULL);
+			
 		}
 	}
 	
 	fclose(fd);
 
 	if((fd = fopen("Makefile","w")) != NULL){
-		char* outFile = *LINEAR_LIST_NEXT(settingData[6]);
-		char* compiler = *LINEAR_LIST_NEXT(settingData[0]);
-		char* objectDirectory = *LINEAR_LIST_NEXT(settingData[5]);
+		char* outFile 			= *LINEAR_LIST_NEXT(settingData[ID_OUTPUT]);
+		char* compiler 			= *LINEAR_LIST_NEXT(settingData[ID_CC]);
+		char* objectDirectory 	= *LINEAR_LIST_NEXT(settingData[ID_OBJDIR]);
 		
 		#ifdef WIN32
 		fprintf(fd,"RM = cmd.exe /C del\n\n",outFile);
@@ -202,10 +225,10 @@ void build(){
 		
 		//add files
 		char** itr;
-		LINEAR_LIST_FOREACH(settingData[3],itr){
+		LINEAR_LIST_FOREACH(settingData[ID_SOURCEDIR],itr){
 			DIR* srcD = opendir(*itr);
 			if(srcD == NULL){
-				perror("open object dir");
+				perror("open source dir");
 				exit(1);
 			}
 
@@ -252,19 +275,19 @@ void build(){
 			fprintf(fd,"\t%s",compiler);
 			
 			char** libs;
-			LINEAR_LIST_FOREACH(settingData[7],libs){
+			LINEAR_LIST_FOREACH(settingData[ID_LIB],libs){
 				fprintf(fd," %s",*libs);
 			}			
 			
 			fprintf(fd," -o %s %s",(*iter)[1],(*iter)[0]);
 
 			char** includeFiles;
-			LINEAR_LIST_FOREACH(settingData[4],includeFiles){
+			LINEAR_LIST_FOREACH(settingData[ID_INCLUDEDIR],includeFiles){
 				fprintf(fd," -I %s",*includeFiles);
 			}			
 
 			char** objFlags;
-			LINEAR_LIST_FOREACH(settingData[2],objFlags){
+			LINEAR_LIST_FOREACH(settingData[ID_OBJFLAG],objFlags){
 				fprintf(fd," %s",*objFlags);
 			}
 			
@@ -280,7 +303,7 @@ void build(){
 		fprintf(fd,"\n\t%s",compiler);
 			
 		char** libs;
-		LINEAR_LIST_FOREACH(settingData[7],libs){
+		LINEAR_LIST_FOREACH(settingData[ID_LIB],libs){
 			fprintf(fd," %s",*libs);
 		}			
 			
@@ -291,7 +314,7 @@ void build(){
 		}
 
 		char** cFlags;
-		LINEAR_LIST_FOREACH(settingData[1],cFlags){
+		LINEAR_LIST_FOREACH(settingData[ID_CFLAG],cFlags){
 			fprintf(fd," %s",*cFlags);
 		}
 
