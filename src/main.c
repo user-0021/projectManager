@@ -39,9 +39,22 @@ const char* settingName[8] = {  "CC",
 								"OUTPUT",
 								"LIB"
 							};
+							
+typedef struct{
+	char* NAME;
+	char** CC;
+	char** C_FLAG;
+	char** OBJ_FLAG;
+	char** SOURCE_DIR;
+	char** INCLUDE;
+	char** OBJ_DIR;
+	char** OUTPUT;
+	char** LIB;
+} NAME_SPACE;
+
 
 void init(char* current);
-void build();
+void build(char* name);
 
 
 int main(int argc,char** argv){
@@ -60,7 +73,7 @@ int main(int argc,char** argv){
 
 	//build project
 	else if(strlistOR(argv[1],4,"build","b","-b","/b") == 0){
-		build();
+		build(argv[2]);
 		exit(0);
 	}
 
@@ -152,7 +165,7 @@ void init(char* current){
 	}
 }
 
-void build(){
+void build(char* targetName){
 	FILE* fd = fopen(".projectManagerConfig","r");
 	if(fd == NULL){
 		fprintf(stderr,".projectManagerConfig not found.\n");
@@ -160,18 +173,28 @@ void build(){
 	}
 
 	//各種環境変数 
-	char** settingData[sizeof(settingName) / sizeof(settingName[0])] = {};
-	int i;
-	for(i = 0;i < (sizeof(settingName) / sizeof(settingName[0]));i++){
-		settingData[i] = LINEAR_LIST_CREATE(char*);
-	}
+	NAME_SPACE* nameSpaceArray = LINEAR_LIST_CREATE(NAME_SPACE);
+
+	//add null name
+	NAME_SPACE nullName;
+	nullName.NAME		= NULL;
+	nullName.CC 		= LINEAR_LIST_CREATE(char*);
+	nullName.C_FLAG		= LINEAR_LIST_CREATE(char*);
+	nullName.OBJ_FLAG	= LINEAR_LIST_CREATE(char*);
+	nullName.SOURCE_DIR	= LINEAR_LIST_CREATE(char*);
+	nullName.INCLUDE	= LINEAR_LIST_CREATE(char*);
+	nullName.OBJ_DIR	= LINEAR_LIST_CREATE(char*);
+	nullName.OUTPUT		= LINEAR_LIST_CREATE(char*);
+	nullName.LIB		= LINEAR_LIST_CREATE(char*);
+	LINEAR_LIST_PUSH(nameSpaceArray,nullName);
 
 	//めんどいので最大文字数をテケトーに決める
 	char line[4096 * 128];
 
-	while(fgets(line,sizeof(line),fd) != NULL){
+	while(memset(line,0,sizeof(line)) && fgets(line,sizeof(line),fd) != NULL){
 		while((line[strlen(line) - 2] == '\\') && (fgets(line + strlen(line) - 2,sizeof(line) - strlen(line),fd) != NULL));
 		line[strlen(line) - 1] = '\0';
+		
 		if(strchr(line,'#') != NULL){
 			*strchr(line,'#') = '\0';
 		}
@@ -179,17 +202,67 @@ void build(){
 		char* arg = strchr(line,'=');
 		char* p = strtok(line," \t\r\n=");
 
+		if(p != NULL && *p == '['){
+			
+			p = strtok(++p,"]");
+			NAME_SPACE addData;
+			addData.NAME		= malloc(strlen(p) + 1);
+			strcpy(addData.NAME,p);
+			
+
+			addData.CC 			= LINEAR_LIST_CREATE(char*);
+			addData.C_FLAG		= LINEAR_LIST_CREATE(char*);
+			addData.OBJ_FLAG	= LINEAR_LIST_CREATE(char*);
+			addData.SOURCE_DIR	= LINEAR_LIST_CREATE(char*);
+			addData.INCLUDE		= LINEAR_LIST_CREATE(char*);
+			addData.OBJ_DIR		= LINEAR_LIST_CREATE(char*);
+			addData.OUTPUT		= LINEAR_LIST_CREATE(char*);
+			addData.LIB			= LINEAR_LIST_CREATE(char*);
+
+			LINEAR_LIST_PUSH(nameSpaceArray,addData);
+			continue;
+		}
+		
 		if(p == NULL || arg == NULL)
 			continue;//エラー回避
-		
+
 		arg++;
 		char** res = strGetMatchPattern(p,sizeof(settingName) / sizeof(settingName[0]),
 				&settingName[0],&settingName[1],&settingName[2],&settingName[3],
 				&settingName[4],&settingName[5],&settingName[6],&settingName[7]);
 
+				
 		if(res != NULL){
-			char** list = settingData[((void*)res-(void*)settingName)/sizeof(settingName[0])];
-			
+			NAME_SPACE* data = LINEAR_LIST_LAST(nameSpaceArray);
+			char** list;
+			switch ((((void*)res-(void*)settingName)/sizeof(settingName[0])))
+			{
+			case 0:
+				list = data->CC;
+				break;
+			case 1:
+				list = data->C_FLAG;
+				break;
+			case 2:
+				list = data->OBJ_FLAG;
+				break;
+			case 3:
+				list = data->SOURCE_DIR;
+				break;
+			case 4:
+				list = data->INCLUDE;
+				break;
+			case 5:
+				list = data->OBJ_DIR;
+				break;
+			case 6:
+				list = data->OUTPUT;
+				break;
+			case 7:
+				list = data->LIB;
+				break;
+			}
+
 			//トークン列の切り分け
 			p = strtok(arg," ");
 			if(p == NULL)
@@ -207,10 +280,29 @@ void build(){
 	
 	fclose(fd);
 
+	NAME_SPACE* itr;
+	NAME_SPACE* target = NULL;
+	
+	LINEAR_LIST_FOREACH_R(nameSpaceArray,itr){
+		if(targetName != NULL && strcmp(itr->NAME,targetName) == 0){
+			target = itr;
+			break;
+		}else if(targetName == NULL && (itr->NAME == NULL || strcmp(itr->NAME,"default") == 0)){
+			target = itr;
+			break;
+		}
+	}
+
+	if(target == NULL){
+		fprintf(stderr,"build rule is not found.\n");
+		return;
+	}
+
 	if((fd = fopen("Makefile","w")) != NULL){
-		char* outFile 			= *LINEAR_LIST_NEXT(settingData[ID_OUTPUT]);
-		char* compiler 			= *LINEAR_LIST_NEXT(settingData[ID_CC]);
-		char* objectDirectory 	= *LINEAR_LIST_NEXT(settingData[ID_OBJDIR]);
+		printf("C\n");
+		char* outFile 			= *LINEAR_LIST_NEXT(target->OUTPUT);
+		char* compiler 			= *LINEAR_LIST_NEXT(target->CC);
+		char* objectDirectory 	= *LINEAR_LIST_NEXT(target->OBJ_DIR);
 		
 		#ifdef WIN32
 		fprintf(fd,"RM = cmd.exe /C del\n\n",outFile);
@@ -225,7 +317,7 @@ void build(){
 		
 		//add files
 		char** itr;
-		LINEAR_LIST_FOREACH(settingData[ID_SOURCEDIR],itr){
+		LINEAR_LIST_FOREACH(target->SOURCE_DIR,itr){
 			DIR* srcD = opendir(*itr);
 			if(srcD == NULL){
 				perror("open source dir");
@@ -275,19 +367,19 @@ void build(){
 			fprintf(fd,"\t%s",compiler);
 			
 			char** libs;
-			LINEAR_LIST_FOREACH(settingData[ID_LIB],libs){
+			LINEAR_LIST_FOREACH(target->LIB,libs){
 				fprintf(fd," %s",*libs);
 			}			
 			
 			fprintf(fd," -o %s %s",(*iter)[1],(*iter)[0]);
 
 			char** includeFiles;
-			LINEAR_LIST_FOREACH(settingData[ID_INCLUDEDIR],includeFiles){
+			LINEAR_LIST_FOREACH(target->INCLUDE,includeFiles){
 				fprintf(fd," -I %s",*includeFiles);
 			}			
 
 			char** objFlags;
-			LINEAR_LIST_FOREACH(settingData[ID_OBJFLAG],objFlags){
+			LINEAR_LIST_FOREACH(target->OBJ_FLAG,objFlags){
 				fprintf(fd," %s",*objFlags);
 			}
 			
@@ -303,7 +395,7 @@ void build(){
 		fprintf(fd,"\n\t%s",compiler);
 			
 		char** libs;
-		LINEAR_LIST_FOREACH(settingData[ID_LIB],libs){
+		LINEAR_LIST_FOREACH(target->LIB,libs){
 			fprintf(fd," %s",*libs);
 		}			
 			
@@ -314,7 +406,7 @@ void build(){
 		}
 
 		char** cFlags;
-		LINEAR_LIST_FOREACH(settingData[ID_CFLAG],cFlags){
+		LINEAR_LIST_FOREACH(target->C_FLAG,cFlags){
 			fprintf(fd," %s",*cFlags);
 		}
 
