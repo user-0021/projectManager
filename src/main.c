@@ -299,7 +299,6 @@ void build(char* targetName){
 	}
 
 	if((fd = fopen("Makefile","w")) != NULL){
-		printf("C\n");
 		char* outFile 			= *LINEAR_LIST_NEXT(target->OUTPUT);
 		char* compiler 			= *LINEAR_LIST_NEXT(target->CC);
 		char* objectDirectory 	= *LINEAR_LIST_NEXT(target->OBJ_DIR);
