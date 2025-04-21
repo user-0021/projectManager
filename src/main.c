@@ -176,6 +176,7 @@ void build(char* targetName){
 	NAME_SPACE* nameSpaceArray = LINEAR_LIST_CREATE(NAME_SPACE);
 
 	//add null name
+	//今のところは意味ないけど、いつかターゲットを指定されなかった場合に読み込まれるデフォルト設定にする
 	NAME_SPACE nullName;
 	nullName.NAME		= NULL;
 	nullName.CC 		= LINEAR_LIST_CREATE(char*);
@@ -237,28 +238,28 @@ void build(char* targetName){
 			char** list;
 			switch ((((void*)res-(void*)settingName)/sizeof(settingName[0])))
 			{
-			case 0:
+			case ID_CC:
 				list = data->CC;
 				break;
-			case 1:
+			case ID_CFLAG:
 				list = data->C_FLAG;
 				break;
-			case 2:
+			case ID_OBJFLAG:
 				list = data->OBJ_FLAG;
 				break;
-			case 3:
+			case ID_SOURCEDIR:
 				list = data->SOURCE_DIR;
 				break;
-			case 4:
+			case ID_INCLUDEDIR:
 				list = data->INCLUDE;
 				break;
-			case 5:
+			case ID_OBJDIR:
 				list = data->OBJ_DIR;
 				break;
-			case 6:
+			case ID_OUTPUT:
 				list = data->OUTPUT;
 				break;
-			case 7:
+			case ID_LIB:
 				list = data->LIB;
 				break;
 			}
@@ -284,16 +285,18 @@ void build(char* targetName){
 	NAME_SPACE* target = NULL;
 	
 	LINEAR_LIST_FOREACH_R(nameSpaceArray,itr){
-		if(targetName != NULL && strcmp(itr->NAME,targetName) == 0){
+
+		if(targetName != NULL && itr->NAME != NULL && strcmp(itr->NAME,targetName) == 0){
 			target = itr;
 			break;
 		}else if(targetName == NULL && (itr->NAME == NULL || strcmp(itr->NAME,"default") == 0)){
 			target = itr;
 			break;
 		}
-	}
 
-	if(target == NULL){
+	}
+	
+	if(target == NULL || target->NAME == NULL){
 		fprintf(stderr,"build rule is not found.\n");
 		return;
 	}
@@ -326,7 +329,7 @@ void build(char* targetName){
 			struct dirent *dp;
 			while ((dp = readdir(srcD)) != NULL) {//src
 				char* p = strrchr(dp->d_name,'.');
-				if(p != NULL && strcmp(p,".c") == 0){
+				if(p != NULL && (strcmp(p,".c") == 0 || strcmp(p,".s") == 0 || strcmp(p,".S") == 0)){
 					char** tmp = malloc(sizeof(char*)*2);
 					tmp[0] = malloc(strlen(*itr) + strlen(dp->d_name) + 2);
 					tmp[1] = malloc(strlen(objectDirectory) + strlen(dp->d_name) + 2);
