@@ -1,0 +1,27 @@
+[default]
+#Project info 
+CC = gcc 
+C_FLAG = 
+OBJ_FLAG =
+SOURCE_DIR = src src/commands library/linear_list library/stringLib
+INCLUDE_DIR = include library
+OBJ_DIR = obj
+LIB =
+
+
+#Output
+OUTPUT = pmn
+
+[default2]
+#Project info 
+CC = gcc 
+C_FLAG = 
+OBJ_FLAG =
+SOURCE_DIR = src src/commands library/linear_list library/stringLib
+INCLUDE_DIR = include library
+OBJ_DIR = obj
+LIB =
+
+
+#Output
+OUTPUT = pmn
