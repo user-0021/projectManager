@@ -17,15 +17,16 @@ typedef enum{
 	ID_LIB 			= 7
 } settingNameId;
 
-const char* settingName[8] = {  "CC",
-								"C_FLAG",
-								"OBJ_FLAG",
-								"SOURCE_DIR",
-								"INCLUDE_DIR",
-								"OBJ_DIR",
-								"OUTPUT",
-								"LIB"
-							};
+const char* settingName[8] = { 
+	"CC",
+	"C_FLAG",
+	"OBJ_FLAG",
+	"SOURCE_DIR",
+	"INCLUDE_DIR",
+	"OBJ_DIR",
+	"OUTPUT",
+	"LIB"
+};
 							
 typedef struct{
 	char* NAME;
@@ -38,15 +39,32 @@ typedef struct{
 	char** OUTPUT;
 	char** LIB;
 } TARGET;
+					
+typedef struct{
+	char* NAME;
+	char** TARGET;
+} PROJECT;
+
+typedef struct
+{
+	char* NAME;
+	char* DEPEND;
+	char* BODY;
+} MAKE_ENTRY;
+
 
 TOKEN* read_file_token(const char* const fileName);
+PROJECT* parse_project(TOKEN* project_token);
 TARGET* parse_target(TOKEN* target_token);
+PROJECT* generateProject(char* name);
 TARGET* generateTarget(char* name);
 int getSettingNameId(char* name);
+int get_obj_entry(MAKE_ENTRY* list,TARGET* target);
+int get_exe_entry(MAKE_ENTRY* list,TARGET* target,MAKE_ENTRY* obj_entry,int counter);
 
 
-int build(char* targetName){
-	
+int build(char* projectName){
+	//tokenize
 	TOKEN* configToken = read_file_token(".projectManagerConfig");
 	TOKEN* targetsToken = read_file_token(".projectManagerTargets");
 
@@ -54,158 +72,110 @@ int build(char* targetName){
 		return -1;
 
 	//各種環境変数 
+	PROJECT* projectArray = parse_project(configToken);
 	TARGET* targetArray = parse_target(targetsToken);
-	if(targetArray == NULL)
+	if(targetArray == NULL || projectArray == NULL)
 		return -1;
 
-	TARGET* itr;
-	TARGET* target = NULL;
+	PROJECT* itr;
+	PROJECT* cur = NULL;
 	
-	printf("A\n");
-	LINEAR_LIST_FOREACH_R(targetArray,itr){
-		printf("%s\n",itr->NAME);
-
-		if(targetName != NULL && itr->NAME != NULL && strcmp(itr->NAME,targetName) == 0){
-			target = itr;
+	LINEAR_LIST_FOREACH_R(projectArray,itr){
+		if(projectName != NULL && itr->NAME != NULL && strcmp(itr->NAME,projectName) == 0){
+			cur = itr;
 			break;
-		}else if(targetName == NULL && (itr->NAME == NULL || strcmp(itr->NAME,"default") == 0)){
-			target = itr;
+		}else if(projectName == NULL && (itr->NAME == NULL || strcmp(itr->NAME,"default") == 0)){
+			cur = itr;
 			break;
 		}
 
 	}
-	return 0;
-	if(target == NULL || target->NAME == NULL){
+	
+	if(cur == NULL || cur->NAME == NULL){
 		fprintf(stderr,"build rule is not found.\n");
 		return -1;
 	}
+	else{
+		//check target
+		char** i;
+		LINEAR_LIST_FOREACH_R(cur->TARGET,i){
+			TARGET* iter;
+			int f = 0;
+			LINEAR_LIST_FOREACH(targetArray,iter){
+				if(iter->NAME != NULL && strcmp(iter->NAME,*i) == 0)
+					f = 1;
+			}
 
-	// if((fd = fopen("Makefile","w")) != NULL){
-	// 	char* outFile 			= *LINEAR_LIST_NEXT(target->OUTPUT);
-	// 	char* compiler 			= *LINEAR_LIST_NEXT(target->CC);
-	// 	char* objectDirectory 	= *LINEAR_LIST_NEXT(target->OBJ_DIR);
+			if(!f){
+				fprintf(stderr,"%s is not found.\n",*i);
+				return -1;
+			}
+		}
 		
-	// 	#ifdef WIN32
-	// 	fprintf(fd,"RM = cmd.exe /C del\n\n",outFile);
-	// 	#endif
+	}
 
-	// 	//generate make build
-	// 	fprintf(fd,"#build executable file\nbuild:%s\n\n",outFile);
-	// 	fprintf(fd,"#make objs\nobj:\n\t@mkdir obj\n\n");
+	FILE* fd;
+	if((fd = fopen("Makefile","w")) != NULL){
 
-	// 	//create file list
-	// 	char*** files = LINEAR_LIST_CREATE(char**);
+		MAKE_ENTRY* makeObj = LINEAR_LIST_CREATE(MAKE_ENTRY);
+		MAKE_ENTRY* makeExe = LINEAR_LIST_CREATE(MAKE_ENTRY);
+
+		int counter = 0;
+		char** targetName;
+		LINEAR_LIST_FOREACH(cur->TARGET,targetName){
+			TARGET* iter;
+			LINEAR_LIST_FOREACH(targetArray,iter){
+				if(iter->NAME != NULL && strcmp(iter->NAME,*targetName) == 0){
+					get_obj_entry(makeObj,iter);
+					get_exe_entry(makeExe,iter,makeObj,counter);
+				}
+			}
+		}
+
 		
-	// 	//add files
-	// 	char** itr;
-	// 	LINEAR_LIST_FOREACH(target->SOURCE_DIR,itr){
-	// 		DIR* srcD = opendir(*itr);
-	// 		if(srcD == NULL){
-	// 			perror("open source dir");
-	// 			exit(1);
-	// 		}
+		#ifdef WIN32
+		fprintf(fd,"RM = cmd.exe /C del\n\n",outFile);
+		#endif
 
-	// 		struct dirent *dp;
-	// 		while ((dp = readdir(srcD)) != NULL) {//src
-	// 			char* p = strrchr(dp->d_name,'.');
-	// 			if(p != NULL && (strcmp(p,".c") == 0 || strcmp(p,".s") == 0 || strcmp(p,".S") == 0)){
-	// 				char** tmp = malloc(sizeof(char*)*2);
-	// 				tmp[0] = malloc(strlen(*itr) + strlen(dp->d_name) + 2);
-	// 				tmp[1] = malloc(strlen(objectDirectory) + strlen(dp->d_name) + 2);
-					
-	// 				memset(tmp[0],0,strlen(*itr) + strlen(dp->d_name) + 2);
-	// 				memset(tmp[1],0,strlen(objectDirectory) + strlen(dp->d_name) + 2);
-					
-	// 				strcpy(tmp[0],*itr);
-	// 				strcpy(tmp[1],objectDirectory);
+		//generate make build
+		fprintf(fd,"#build executable file\nbuild:");
+		MAKE_ENTRY* iter;
+		LINEAR_LIST_FOREACH(makeExe,iter){
+			fprintf(fd,"%s ",iter->NAME);
+		}
+		fprintf(fd,"\n\n#make objs\nobj:\n\t@mkdir obj\n\n");
 
-	// 				if((*itr)[strlen(*itr)-1] != S)
-	// 					tmp[0][strlen(*itr)] = S;
+		//obj
+		LINEAR_LIST_FOREACH(makeObj,iter){
+			fprintf(fd,"%s:%s\n%s",iter->NAME,iter->DEPEND,iter->BODY);
+		}
 
-	// 				if(objectDirectory[strlen(objectDirectory)-1] != S)
-	// 					tmp[1][strlen(objectDirectory)] = S;
+		//exe
+		LINEAR_LIST_FOREACH(makeExe,iter){
+			fprintf(fd,"%s:%s\n%s",iter->NAME,iter->DEPEND,iter->BODY);
+		}		
 
-	// 				strcat(tmp[0],dp->d_name);
-	// 				strcat(tmp[1],dp->d_name);
-
-	// 				p = strrchr(tmp[1],'.');
-	// 				p[1] = 'o';
-	// 				p[2] = '\0';
-
-	// 				LINEAR_LIST_PUSH(files,tmp);
-	// 			}
-	// 		}
-
-	// 		closedir(srcD);
-	// 	}
-		
-	// 	char*** iter;
-	// 	//object file
-	// 	LINEAR_LIST_FOREACH(files,iter){
-	// 		fprintf(fd,"%s: %s\n",(*iter)[1],(*iter)[0]);
-			
-
-	// 		fprintf(fd,"\t%s",compiler);
-			
-	// 		char** libs;
-	// 		LINEAR_LIST_FOREACH(target->LIB,libs){
-	// 			fprintf(fd," %s",*libs);
-	// 		}			
-			
-	// 		fprintf(fd," -o %s %s",(*iter)[1],(*iter)[0]);
-
-	// 		char** includeFiles;
-	// 		LINEAR_LIST_FOREACH(target->INCLUDE,includeFiles){
-	// 			fprintf(fd," -I %s",*includeFiles);
-	// 		}			
-
-	// 		char** objFlags;
-	// 		LINEAR_LIST_FOREACH(target->OBJ_FLAG,objFlags){
-	// 			fprintf(fd," %s",*objFlags);
-	// 		}
-			
-	// 		fprintf(fd," -c\n\n");
-	// 	}
-		
-	// 	//generate executable
-	// 	fprintf(fd,"%s: obj",outFile);
-	// 	LINEAR_LIST_FOREACH(files,iter){
-	// 		fprintf(fd," %s",(*iter)[1]);
-	// 	}
-
-	// 	fprintf(fd,"\n\t%s",compiler);
-			
-	// 	char** libs;
-	// 	LINEAR_LIST_FOREACH(target->LIB,libs){
-	// 		fprintf(fd," %s",*libs);
-	// 	}			
-			
-	// 	fprintf(fd," -o %s",outFile);
-		
-	// 	LINEAR_LIST_FOREACH(files,iter){
-	// 		fprintf(fd," %s",(*iter)[1]);
-	// 	}
-
-	// 	char** cFlags;
-	// 	LINEAR_LIST_FOREACH(target->C_FLAG,cFlags){
-	// 		fprintf(fd," %s",*cFlags);
-	// 	}
-
-	// 	//generate make all
-	// 	fprintf(fd,"\n\nall: clean %s",outFile);
+		//generate make all
+		fprintf(fd,"all: clean ");
+		LINEAR_LIST_FOREACH(makeExe,iter){
+			fprintf(fd,"%s ",iter->NAME);
+		}
+		LINEAR_LIST_FOREACH(makeObj,iter){
+			fprintf(fd,"%s ",iter->NAME);
+		}
 
 
-	// 	//generate make clean
-	// 	fprintf(fd,"\n\nclean:\n\t$(RM) %s",outFile);
-	// 	LINEAR_LIST_FOREACH(files,iter){
-	// 		fprintf(fd," %s",(*iter)[1]);
-	// 	}
+		//generate make clean
+		fprintf(fd,"\n\nclean:\n\t$(RM) obj/*.o ");
+		LINEAR_LIST_FOREACH(makeExe,iter){
+			fprintf(fd,"%s ",iter->NAME);
+		}
 
-	// 	fclose(fd);
-	// }else{
-	// 	perror("open Makefile");
-	// 	return -1;
-	// }
+		fclose(fd);
+	}else{
+		perror("open Makefile");
+		return -1;
+	}
 
 	return 0;
 }
@@ -234,6 +204,107 @@ TOKEN* read_file_token(const char* const fileName){
 	return tokenize(buffer);
 }
 
+
+PROJECT* parse_project(TOKEN* project_token){
+	//generate head
+	PROJECT* profectArray = LINEAR_LIST_CREATE(PROJECT);
+
+	//add null name
+	//今のところは意味ないけど、いつかターゲットを指定されなかった場合に読み込まれるデフォルト設定にする
+	PROJECT* nullProject = generateProject(NULL);
+	LINEAR_LIST_PUSH(profectArray,*nullProject);
+	free(nullProject);
+
+	//load targets
+	project_token  = project_token->next;
+	while(project_token->type != TOKEN_EOF){
+		
+		switch (project_token->type)
+		{
+		case TOKEN_RESURVED:{
+			if(*project_token->str == '['){
+				//check next token
+				project_token = project_token->next;
+				if(project_token->type != TOKEN_STR){
+					//error
+					fprintf(stdout,"予期しないトークン \'%c\'周辺に構文エラーがあります\n",*project_token->str);
+					return NULL;
+				}
+				//generate
+				PROJECT* addData = generateProject(project_token->str);
+
+				//check next token
+				project_token = project_token->next;
+				if(project_token->type != TOKEN_RESURVED || *project_token->str != ']'){
+					//error
+					fprintf(stdout,"予期しないトークン \'%c\'周辺に構文エラーがあります\n",*project_token->str);
+					return NULL;
+				}
+
+				//push list
+				LINEAR_LIST_PUSH(profectArray,*addData);
+				free(addData);
+			}else{
+				fprintf(stdout,"予期しないトークン \'%c\'周辺に構文エラーがあります\n",*project_token->str);
+				return NULL;
+			}
+
+			break;
+		}
+		case TOKEN_STR:{
+			//num
+			char* str = project_token->str;
+
+			//check next token
+			project_token = project_token->next;
+			if(project_token->type != TOKEN_RESURVED || *project_token->str != '='){
+				//error
+				fprintf(stdout,"予期しないトークン \'%c\'周辺に構文エラーがあります\n",*project_token->str);
+				return NULL;
+			}
+
+			project_token = project_token->next;
+
+			if(project_token->type == TOKEN_STR){
+				PROJECT* data = LINEAR_LIST_LAST(profectArray);
+				
+				if(strcmp(str,"TARGET") != 0){
+					//error
+					fprintf(stdout,"予期しないトークン \'%s\'周辺に構文エラーがあります\n",project_token->str);
+					return NULL;
+				}
+
+				//トークン列の切り分け
+				if(project_token->type == TOKEN_PUN)
+					continue;
+				
+				do{
+					LINEAR_LIST_PUSH(data->TARGET,project_token->str);
+					project_token = project_token->next;
+				}while (project_token->type == TOKEN_STR);
+
+				
+				if(project_token->type != TOKEN_PUN && project_token->type != TOKEN_EOF){
+					//error
+					fprintf(stdout,"予期しないトークン \'%c\'周辺に構文エラーがあります\n",*project_token->str);
+					return NULL;
+				}
+
+				
+			}
+			break;
+		}	
+		default:
+			break;
+		}
+
+		project_token = project_token->next;
+	}
+
+	return profectArray;
+}
+
+
 TARGET* parse_target(TOKEN* target_token){
 	//generate head
 	TARGET* targetArray = LINEAR_LIST_CREATE(TARGET);
@@ -242,6 +313,7 @@ TARGET* parse_target(TOKEN* target_token){
 	//今のところは意味ないけど、いつかターゲットを指定されなかった場合に読み込まれるデフォルト設定にする
 	TARGET* nullTarget = generateTarget(NULL);
 	LINEAR_LIST_PUSH(targetArray,*nullTarget);
+	free(nullTarget);
 
 	//load targets
 	target_token  = target_token->next;
@@ -271,6 +343,7 @@ TARGET* parse_target(TOKEN* target_token){
 
 				//push list
 				LINEAR_LIST_PUSH(targetArray,*addData);
+				free(addData);
 			}else{
 				fprintf(stdout,"予期しないトークン \'%c\'周辺に構文エラーがあります\n",*target_token->str);
 				return NULL;
@@ -333,17 +406,16 @@ TARGET* parse_target(TOKEN* target_token){
 					continue;
 				
 				do{
-					if(target_token->type == TOKEN_STR){
-						LINEAR_LIST_PUSH(list,target_token->str);
-					}else{
-						//error
-						fprintf(stdout,"予期しないトークン \'%c\'周辺に構文エラーがあります\n",*target_token->str);
-						return NULL;
-					}
+					LINEAR_LIST_PUSH(list,target_token->str);
 
 					target_token = target_token->next;
-				}while (target_token->type != TOKEN_PUN);
+				}while (target_token->type == TOKEN_STR);
 				
+				if(target_token->type != TOKEN_PUN && target_token->type != TOKEN_EOF){
+					//error
+					fprintf(stdout,"予期しないトークン \'%c\'周辺に構文エラーがあります\n",*target_token->str);
+					return NULL;
+				}
 			}
 			break;
 		}	
@@ -355,6 +427,17 @@ TARGET* parse_target(TOKEN* target_token){
 	}
 
 	return targetArray;
+}
+
+PROJECT* generateProject(char* name){
+	//malloc
+	PROJECT* data = malloc(sizeof(PROJECT));
+	memset(data,0,sizeof(PROJECT));
+
+	data->NAME			= name;
+	data->TARGET		= LINEAR_LIST_CREATE(char*);
+
+	return data;
 }
 
 TARGET* generateTarget(char* name){
@@ -389,4 +472,167 @@ int getSettingNameId(char* name){
 	}
 	
 	return -1;
+}
+
+int get_obj_entry(MAKE_ENTRY* list,TARGET* target){
+	//
+	char* compiler = *LINEAR_LIST_LAST(target->CC);
+	char* objDir = *LINEAR_LIST_LAST(target->OBJ_DIR);
+
+
+	//
+	char** itr;
+	LINEAR_LIST_FOREACH(target->SOURCE_DIR,itr){
+		DIR* srcD = opendir(*itr);
+		if(srcD == NULL){
+			perror("open source dir");
+			exit(1);
+		}
+		
+		struct dirent *dp;
+		while ((dp = readdir(srcD)) != NULL) {//src
+			char* p = strrchr(dp->d_name,'.');
+			if(dp->d_type == DT_REG && p != NULL && (strcmp(p,".c") == 0 || strcmp(p,".s") == 0 || strcmp(p,".S") == 0)){
+				MAKE_ENTRY entry;
+				char * inFile;
+				
+				//depend
+				entry.NAME = malloc(strlen(target->NAME) + strlen(*itr) + strlen(dp->d_name) + strlen(objDir) + 4);
+				strcpy(entry.NAME,objDir);
+				strcat(entry.NAME,"/");
+				strcat(entry.NAME,target->NAME);
+				strcat(entry.NAME,"_");
+				strcat(entry.NAME,*itr);
+				strcat(entry.NAME,"/");
+				strcat(entry.NAME,dp->d_name);
+				inFile = entry.NAME + strlen(target->NAME) + strlen(objDir) + 2;
+
+				//name
+				printf("%s\n",*itr);
+				entry.DEPEND = malloc(strlen(inFile)  + 1);
+				strcat(entry.DEPEND,inFile);
+
+				//set exp
+				entry.NAME[strlen(entry.NAME) - 1] = 'o';
+				char* p,*head = entry.NAME + strlen(objDir) + 1;
+				while (p = strchr(head,'/'))
+					*p = '_';				
+
+				
+
+				//body
+				entry.BODY = malloc(strlen(compiler) + 3);
+				strcpy(entry.BODY,"\t");
+				strcat(entry.BODY,compiler);
+				strcat(entry.BODY," ");
+				
+				char** libs;
+				LINEAR_LIST_FOREACH(target->LIB,libs){
+					entry.BODY = realloc(entry.BODY,strlen(entry.BODY) + strlen(*libs) + 2);
+					strcat(entry.BODY,*libs);
+					strcat(entry.BODY," ");
+				}			
+				
+				// -o
+				entry.BODY = realloc(entry.BODY,strlen(entry.BODY) + strlen(entry.DEPEND) + strlen(entry.NAME) + 7);
+				strcat(entry.BODY,"-o ");
+				strcat(entry.BODY,entry.NAME);
+				strcat(entry.BODY," ");
+				strcat(entry.BODY,entry.DEPEND);
+				strcat(entry.BODY," ");
+
+				//-I
+				char** include;
+				LINEAR_LIST_FOREACH(target->INCLUDE,include){
+					entry.BODY = realloc(entry.BODY,strlen(entry.BODY) + strlen(*include) + 5);
+					strcat(entry.BODY,"-I ");
+					strcat(entry.BODY,*include);
+					strcat(entry.BODY," ");
+				}			
+
+				// flag
+				char** objFlags;
+				LINEAR_LIST_FOREACH(target->OBJ_FLAG,objFlags){
+					entry.BODY = realloc(entry.BODY,strlen(entry.BODY) + strlen(*objFlags) + 2);
+					strcat(entry.BODY,*objFlags);
+					strcat(entry.BODY," ");
+				}
+			
+				// -c
+				entry.BODY = realloc(entry.BODY,strlen(entry.BODY) + 5);
+				strcat(entry.BODY,"-c\n\n");
+
+				LINEAR_LIST_PUSH(list,entry);
+			}else if(dp->d_type == DT_DIR && strlistOR(dp->d_name,2,".","..") != 0){
+				char* path = malloc(strlen(dp->d_name) + strlen(*itr) + 2);
+				strcpy(path,*itr);
+				strcat(path,"/");
+				strcat(path,dp->d_name);
+				
+				LINEAR_LIST_PUSH(target->SOURCE_DIR,path);
+			}
+		}
+
+		closedir(srcD);
+	}
+
+	return 0;
+}
+
+int get_exe_entry(MAKE_ENTRY* list,TARGET* target,MAKE_ENTRY* obj_entry,int counter){
+	char* compiler = *LINEAR_LIST_LAST(target->CC);
+	
+	//name
+	MAKE_ENTRY entry;
+	entry.NAME = *LINEAR_LIST_LAST(target->OUTPUT);
+
+	//depend
+	entry.DEPEND = malloc(5);
+	strcpy(entry.DEPEND,"obj ");
+	
+	MAKE_ENTRY* itr;
+	int i = 0;
+	LINEAR_LIST_FOREACH(obj_entry,itr){
+		if(!(i < counter)){
+			entry.DEPEND = realloc(entry.DEPEND,strlen(entry.DEPEND) + strlen(itr->NAME) + 2);
+			strcat(entry.DEPEND,itr->NAME);
+			strcat(entry.DEPEND," ");
+		}
+	}
+
+	//body
+	entry.BODY = malloc(strlen(compiler) + 3);
+	strcpy(entry.BODY,"\t");
+	strcat(entry.BODY,compiler);
+	strcat(entry.BODY," ");
+
+	//lib
+	char** libs;
+	LINEAR_LIST_FOREACH(target->LIB,libs){
+		entry.BODY = realloc(entry.BODY,strlen(entry.BODY) + strlen(*libs) + 2);
+		strcat(entry.BODY,*libs);
+		strcat(entry.BODY," ");
+	}			
+	
+	// -o
+	entry.BODY = realloc(entry.BODY,strlen(entry.BODY) + strlen(entry.NAME) + strlen(entry.DEPEND) + 1);
+	strcat(entry.BODY,"-o ");
+	strcat(entry.BODY,entry.NAME);
+	strcat(entry.BODY," ");
+	strcat(entry.BODY,entry.DEPEND + 4);
+
+	// flag
+	char** cFlags;
+	LINEAR_LIST_FOREACH(target->C_FLAG,cFlags){
+		entry.BODY = realloc(entry.BODY,strlen(entry.BODY) + strlen(*cFlags) + 2);
+		strcat(entry.BODY,*cFlags);
+		strcat(entry.BODY," ");
+	}
+
+	entry.BODY = realloc(entry.BODY,strlen(entry.BODY) + 3);
+	strcat(entry.BODY,"\n\n");
+
+	LINEAR_LIST_PUSH(list,entry);
+
+	return i;
 }

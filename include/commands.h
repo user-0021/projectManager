@@ -5,6 +5,7 @@
 #include <windows.h>
 #define S '\\'
 #else
+#define  _BSD_SOURCE 
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/types.h>
@@ -15,4 +16,4 @@
 #endif
 
 int init(char* current);
-int build(char* name);
+int build(char* projectName);
