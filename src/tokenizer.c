@@ -3,7 +3,7 @@
 #include <tokenizer.h>
 #include <stdio.h>
 
-#define RESURVED_CHAR "[]="
+#define RESURVED_CHAR "[]=,"
 #define INVALIED_CHAR " \r\t"
 #define COMENT_OUT_CHAR "#"
 #define PUNCTUATION_CHAR "\n"
@@ -18,7 +18,7 @@ TOKEN* tokenize(char* str){
 	memset(head,0,sizeof(TOKEN));
 	now = head;
 	
-	
+
 	while((*str) != '\0'){
 		if(strchr(RESURVED_CHAR,*str) != NULL){
 			// resurved type
@@ -61,15 +61,18 @@ TOKEN* tokenize(char* str){
 					break;
 				}
 				
-				if(*iter == '\\' && *(iter+1) == '\n'){
-					len += 2;
-					continue;
+				if(*iter == '\\'){
+					if(*(iter+1) == '\n'){
+						len += 2;
+						continue;
+					}else if(strchr(RESURVED_CHAR,*(iter+1)) || strchr(COMENT_OUT_CHAR,*(iter+1))){
+						memmove(iter,iter+1,strlen(iter));//null文字ｎの+1を考えるとこれでよい
+					}
 				}
 
 				len++;
 			}
 			
-
 
 			TOKEN* new;
 			new = malloc(sizeof(TOKEN));
@@ -86,8 +89,7 @@ TOKEN* tokenize(char* str){
 
 		str++;
 	}
-
-
+	
 	TOKEN* new;
 	new = malloc(sizeof(TOKEN));
 	memset(new,0,sizeof(TOKEN));
