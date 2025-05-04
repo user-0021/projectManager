@@ -508,7 +508,6 @@ int get_obj_entry(MAKE_ENTRY* list,TARGET* target){
 				inFile = entry.NAME + strlen(target->NAME) + strlen(objDir) + 2;
 
 				//name
-				printf("%s\n",*itr);
 				entry.DEPEND = malloc(strlen(inFile)  + 1);
 				strcat(entry.DEPEND,inFile);
 
