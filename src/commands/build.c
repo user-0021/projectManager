@@ -127,7 +127,7 @@ int build(char* projectName){
 			LINEAR_LIST_FOREACH(targetArray,iter){
 				if(iter->NAME != NULL && strcmp(iter->NAME,*targetName) == 0){
 					get_obj_entry(makeObj,iter);
-					get_exe_entry(makeExe,iter,makeObj,counter);
+					counter = get_exe_entry(makeExe,iter,makeObj,counter);
 				}
 			}
 		}
@@ -509,7 +509,7 @@ int get_obj_entry(MAKE_ENTRY* list,TARGET* target){
 
 				//name
 				entry.DEPEND = malloc(strlen(inFile)  + 1);
-				strcat(entry.DEPEND,inFile);
+				strcpy(entry.DEPEND,inFile);
 
 				//set exp
 				entry.NAME[strlen(entry.NAME) - 1] = 'o';
@@ -597,6 +597,7 @@ int get_exe_entry(MAKE_ENTRY* list,TARGET* target,MAKE_ENTRY* obj_entry,int coun
 			strcat(entry.DEPEND,itr->NAME);
 			strcat(entry.DEPEND," ");
 		}
+		i++;
 	}
 
 	//body
