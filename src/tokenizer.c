@@ -3,7 +3,7 @@
 #include <tokenizer.h>
 #include <stdio.h>
 
-#define RESURVED_CHAR "[]=,"
+#define RESURVED_CHAR "[]="
 #define INVALIED_CHAR " \r\t"
 #define COMENT_OUT_CHAR "#"
 #define PUNCTUATION_CHAR "\n"
